@@ -6,13 +6,21 @@ struct MemoryMap;
 
 class GameBoy
 {
+	Processor* processor;
+	MemoryMap* memory_map;
+	Rom* loaded_rom;
+
+	static GameBoy* instance;
 public:
-	static Processor* processor;
-	static MemoryMap* memory_map;
 
-	static Rom* loaded_bootrom;
-	static Rom* loaded_rom;
+	static GameBoy* GetGameBoy();
+	GameBoy(const char* bootrom_path, const char* rom_name);
 
+	void Start();
+	void LoadBootrom(const char* bootrom_path);
 
-	GameBoy(const char* bootrom_name, const char* rom_name);
+	static MemoryMap& GetMemory();
+	static Processor& GetCPU();
+
+	static void SystemError(const char*, ...);
 };

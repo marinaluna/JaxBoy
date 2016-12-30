@@ -20,4 +20,4 @@ run:$(BINARY)
 
 clean:
 	rm -rf build/*
-	mkdir -p build/modules
+	mkdir -p build/memory

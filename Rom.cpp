@@ -1,6 +1,6 @@
-#include "Rom.h"
-
 #include <cstdio>
+
+#include "Rom.h"
 
 
 Rom::Rom(const char* rom_name)
