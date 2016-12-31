@@ -13,6 +13,7 @@
 
 
 GameBoy* GameBoy::instance;
+bool GameBoy::IsDebugMode = false;
 GameBoy* GameBoy::GetGameBoy()
 {
 	return instance;
@@ -20,6 +21,11 @@ GameBoy* GameBoy::GetGameBoy()
 
 GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 {
+	// TODO: add this to boot args
+	IsDebugMode = true;
+
+
+
 	instance = this;
 
 	processor = new Processor();
@@ -28,12 +34,12 @@ GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 	LoadBootrom(bootrom_path);
 }
 
-void GameBoy::Start()
+void GameBoy::Run()
 {
 	uint32_t i = 0;
 	while(true)
 	{
-		
+		int cycles = processor->Loop();
 	}
 }
 
