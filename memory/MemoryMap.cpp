@@ -59,7 +59,7 @@ MemoryRegion* MemoryMap::GetRegionFromAddress(uint16_t address)
 }
 
 // All reads and writes are in little endian
-void MemoryMap::write8(uint16_t address, uint8_t data)
+void MemoryMap::Write8(uint16_t address, uint8_t data)
 {
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)
@@ -68,7 +68,7 @@ void MemoryMap::write8(uint16_t address, uint8_t data)
 	}
 	region->write8(address, data);
 }
-void MemoryMap::write16(uint16_t address, uint16_t data)
+void MemoryMap::Write16(uint16_t address, uint16_t data)
 {
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)
@@ -77,7 +77,7 @@ void MemoryMap::write16(uint16_t address, uint16_t data)
 	}
 	region->write16(address, data);
 }
-uint8_t MemoryMap::read8(uint16_t address)
+uint8_t MemoryMap::Read8(uint16_t address)
 {
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)
@@ -86,7 +86,7 @@ uint8_t MemoryMap::read8(uint16_t address)
 	}
 	return region->read8(address);
 }
-uint16_t MemoryMap::read16(uint16_t address)
+uint16_t MemoryMap::Read16(uint16_t address)
 {
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)

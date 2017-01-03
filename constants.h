@@ -12,11 +12,6 @@
 #define MMIO_OFFSET						0xFF00
 #define HIGH_RAM_OFFSET					0xFF80
 
-#define FLAG_ZERO					0b10000000
-#define FLAG_SUBTRACT				0b01000000
-#define FLAG_HALFCARRY				0b00100000
-#define FLAG_CARRY					0b00010000
-
 #define BIT0_MASK					0b00000001
 #define BIT1_MASK					0b00000010
 #define BIT2_MASK					0b00000100

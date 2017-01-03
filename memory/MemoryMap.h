@@ -19,8 +19,8 @@ public:
 
 	MemoryRegion* GetRegionFromAddress(uint16_t address);
 
-	void write8(uint16_t address, uint8_t data);
-	void write16(uint16_t address, uint16_t data);
-	uint8_t read8(uint16_t address);
-	uint16_t read16(uint16_t address);
+	void Write8(uint16_t address, uint8_t data);
+	void Write16(uint16_t address, uint16_t data);
+	uint8_t Read8(uint16_t address);
+	uint16_t Read16(uint16_t address);
 };

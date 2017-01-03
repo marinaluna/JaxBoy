@@ -39,7 +39,7 @@ void GameBoy::Run()
 	uint32_t i = 0;
 	while(true)
 	{
-		int cycles = processor->Loop();
+		int cycles = processor->Tick();
 	}
 }
 

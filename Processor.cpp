@@ -7,103 +7,140 @@
 #include "Processor.h"
 
 
-#define REGHIGH(reg)			((reg & 0xFF00) >> 8)
-#define REGLOW(reg)				(reg & 0xFF)
-#define REGSETHIGH(reg, val)	(reg = ((val & 0xFF) << 8) | (reg & 0xFF))
-#define REGSETLOW(reg, val)		(reg = (reg & 0xFF00) | val & 0xFF)
+#define SETBIT(mask, data, value)													\
+		data = ((data & ~mask) | ((value)? mask : 0))
+#define CHECKBIT(mask, data)														\
+		(data & mask)
 
-#define SETFLAG(mask)			REGSETLOW(reg_AF, REGLOW(reg_AF) | mask);
-#define CLEARFLAG(mask)			REGSETLOW(reg_AF, REGLOW(reg_AF) & ~mask);
+#define WRITE8(address, data)														\
+		GameBoy::GetMemory().Write8(address, data)
+#define WRITE16(address, data)														\
+		GameBoy::GetMemory().Write16(address, data)
+#define READ8(address)																\
+		GameBoy::GetMemory().Read8(address)
+#define READ16(address)																\
+		GameBoy::GetMemory().Read16(address)
 
-#define LDREG(reg, src)																\
-		reg = src;																	\
-		instruction_length = 3;														\
-		cycles_this_frame = 12;
-#define LDADDR(dest, src)															\
-		GameBoy::GetMemory().write8(dest, src);										\
-		cycles_this_frame = 8;
-#define XOR(reg)																	\
-		REGSETHIGH(reg_AF, REGHIGH(reg_AF) ^ reg);									\
-		cycles_this_frame = 4;
-#define CB(address)																	\
-		ExecuteCBOpcode(address, cycles_this_frame, instruction_length);
+#define SETFLAGS(zero, sub, half, carry)											\
+		if(zero != -1) SETBIT(BIT7_MASK, reg_AF.High(), zero)						\
+		if(sub != -1) SETBIT(BIT6_MASK, reg_AF.High(), sub)							\
+		if(half != -1) SETBIT(BIT5_MASK, reg_AF.High(), half)						\
+		if(carry != -1) SETBIT(BIT4_MASK, reg_AF.High(), carry)
+#define CHECKFLAG(mask)																\
+		CHECKBIT(mask, reg_AF.High())
 
-#define BIT(mask, reg)																\
-		if(reg & mask)																\
-			{SETFLAG(FLAG_ZERO);}													\
-		else																		\
-			{CLEARFLAG(FLAG_ZERO);}													\
-		instruction_length = 2;														\
-		cycles_this_frame = 8;
+#define LENGTHCYCLES(length, cycles)												\
+		instruction_length = length;												\
+		cycles_this_tick = cycles;
 
 
 Processor::Processor()
 {
-	reg_PC = 0x0000;
-	reg_AF = reg_BC = reg_DE = reg_HL = 0x0000;
+	reg_PC = uint16_t(0x0000);
+	reg_AF = reg_BC = reg_DE = reg_HL = uint16_t(0x0000);
 }
 
-int Processor::Loop()
+int Processor::Tick()
 {
-	int cycles = ExecuteNextOpcode(reg_PC);
+	int cycles = ExecuteAt(reg_PC);
 
 	return cycles;
 }
 
-int Processor::ExecuteNextOpcode(uint16_t& pc_address) // Decodes and executes instruction
+int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 {
-	uint8_t opcode = GameBoy::GetMemory().read8(pc_address);
-	int instruction_length = 1;
-	int cycles_this_frame = 1;
+	uint8_t opcode = GameBoy::GetMemory().Read8(address);
+	int instruction_length;
+	int cycles_this_tick;
 
 	switch(opcode)
 	{
 	case 0x00: // NOP
 		break;
+	case 0x01: // LD BC, imm16
+		reg_BC = READ16(address + 1);
+		LENGTHCYCLES(3, 12);
+		break;
+	case 0x02: // LD (BC), A
+		WRITE8(reg_BC, reg_AF.High());
+		LENGTHCYCLES(1, 8);
+		break;
+	case 0x03: // INC BC
+		++reg_BC;
+		LENGTHCYCLES(1, 8);
+		break;
+	case 0x04: // INC B
+		++reg_BC.High();
+		LENGTHCYCLES(1, 4);
+		break;
+	case 0x05: // DEC B
+		--reg_BC.High();
+		LENGTHCYCLES(1, 4);
+		break;
+	case 0x06: // LD B, imm8
+		reg_BC.High() = READ8(address + 1);
+		LENGTHCYCLES(2, 8);
+		break;
+	case 0x07: // RLCA
+		break;
+	case 0x08: // LD (imm16), SP
+	case 0x09: // ADD HL, BC
+	case 0x0A: // LD A, (BC)
+	case 0x0B: // DEC BC
+	case 0x0C: // INC C
+	case 0x0D: // DEC C
+	case 0x0E: // LD C, imm8
+	case 0x0F: // RRCA
 	case 0x21: // LD HL, imm16
-		LDREG(reg_HL, GameBoy::GetMemory().read16(pc_address + 1));
+		reg_HL = READ16(address + 1);
+		LENGTHCYCLES(3, 12);
 		break;
 	case 0x31: // LD SP, imm16
-		LDREG(reg_SP, GameBoy::GetMemory().read16(pc_address + 1));
+		reg_SP = READ16(address + 1);
+		LENGTHCYCLES(3, 12);
 		break;
 	case 0x32: // LD (HL-), A
-		LDADDR(reg_HL, REGHIGH(reg_AF));
-		reg_HL--;
+		WRITE8(reg_HL, reg_AF.High());
+		--reg_HL;
+		LENGTHCYCLES(1, 8);
+		break;
 	case 0xAF: // XOR A, A
-		XOR(REGHIGH(reg_AF));
+		reg_AF.High() ^= reg_AF.High();
+		LENGTHCYCLES(1, 4);
 		break;
 	case 0xCB: // CB extension
-		CB(pc_address + 1);
+		ExecuteCBOpcode(address + 1, cycles_this_tick, instruction_length);
 		break;
 	default:
-		GameBoy::SystemError("Unknown OPCODE %#02x at address %#04x!\n", opcode, pc_address);
+		GameBoy::SystemError("Unknown OPCODE %#02x at address %#04x!\n", opcode, address);
 	}
 
 	if(GameBoy::IsDebugMode && opcode != 0xCB)
 	{
 		if(instruction_length == 2 || instruction_length == 3)
 		{
-			uint16_t operand = (instruction_length == 2)? GameBoy::GetMemory().read8(pc_address + 1) : GameBoy::GetMemory().read16(pc_address + 1);
-			printf("OPCODE %#02x with operand %#04x at address %#04x\n", opcode, operand, pc_address);
+			uint16_t operand = (instruction_length == 2)? READ8(address + 1) : READ16(address + 1);
+			printf("OPCODE %#02x with operand %#04x at address %#04x\n", opcode, operand, address);
 		}
 		else
 		{
-			printf("OPCODE %#02x at address %#04x\n", opcode, pc_address);
+			printf("OPCODE %#02x at address %#04x\n", opcode, address);
 		}
 	}
 
-	pc_address += instruction_length;
-	return cycles_this_frame;
+	reg_PC += instruction_length;
+	return cycles_this_tick;
 }
 
-void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_frame, int& instruction_length)
+void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& instruction_length)
 {
-	int cb_opcode = GameBoy::GetMemory().read8(address);
+	int cb_opcode = READ8(address);
 
 	switch(cb_opcode)
 	{
 	case 0x7C: // BIT 7, H
-		BIT(BIT7_MASK, REGHIGH(reg_HL));
+		SETFLAGS(CHECKBIT(BIT7_MASK, reg_HL.High()), 0, 1, -1);
+		LENGTHCYCLES(2, 8);
 		break;
 	default:
 		GameBoy::SystemError("Unknown EXTENDED OPCODE %#02x at address %#04x!\n", cb_opcode, address);
@@ -113,7 +150,7 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_frame, int& i
 	{
 		if(instruction_length == 3 || instruction_length == 4)
 		{
-			uint16_t operand = (instruction_length == 3)? GameBoy::GetMemory().read8(address + 1) : GameBoy::GetMemory().read16(address + 1);
+			uint16_t operand = (instruction_length == 3)? READ8(address + 1) : READ16(address + 1);
 			printf("	EXTENDED OPCODE %#02x with operand %#04x at address %#04x\n", cb_opcode, operand, address);
 		}
 		else
