@@ -24,8 +24,6 @@ GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 	// TODO: add this to boot args
 	IsDebugMode = true;
 
-
-
 	instance = this;
 
 	processor = new Processor();
@@ -46,9 +44,12 @@ void GameBoy::Run()
 void GameBoy::LoadBootrom(const char* bootrom_path)
 {
 	FILE* file = fopen(bootrom_path, "rb");
+	
 	uint8_t* buffer = (uint8_t*) malloc(0x100);
 	fread(buffer, 0x100, 1, file);
+
 	GetMemory().GetRegionFromAddress(0x0000)->memcpy(0x0000, (void*) buffer, 0x100);
+
 	free(buffer);
 	fclose(file);
 }

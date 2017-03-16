@@ -21,4 +21,9 @@
 #define BIT6_MASK					0b01000000
 #define BIT7_MASK					0b10000000
 
+#define FLAG_ZERO					 BIT7_MASK
+#define FLAG_SUB					 BIT6_MASK
+#define FLAG_HALF					 BIT5_MASK
+#define FLAG_CARRY					 BIT4_MASK
+
 #endif
