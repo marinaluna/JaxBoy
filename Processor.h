@@ -37,10 +37,14 @@ class Processor
 	Reg16Bit	reg_DE;
 	Reg16Bit	reg_HL;
 
+	int Step;
+
 public:
 	Processor();
 
 	int Tick();
+	void DebugStep();
+
 	int ExecuteAt(uint16_t address);
 	void ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& instruction_length);
 };

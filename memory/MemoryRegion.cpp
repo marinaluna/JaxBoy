@@ -11,6 +11,12 @@ MemoryRegion::MemoryRegion(uint16_t offset, uint16_t size)
 	memset((void*) memory, 0x00, size);
 }
 
+MemoryRegion::~MemoryRegion()
+{
+	if(memory != nullptr)
+		delete memory;
+}
+
 void MemoryRegion::memcpy(uint16_t offset, void* dataptr, uint16_t bytes)
 {
 	::memcpy((void*) (memory + offset), dataptr, bytes);

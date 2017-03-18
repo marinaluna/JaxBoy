@@ -16,6 +16,7 @@ class MemoryMap
 
 public:
 	MemoryMap(size_t size);
+	~MemoryMap();
 
 	MemoryRegion* GetRegionFromAddress(uint16_t address);
 

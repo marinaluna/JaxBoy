@@ -17,6 +17,24 @@ MemoryMap::MemoryMap(size_t size)
 	high_ram_area = new HighRAM(0x7F);
 }
 
+MemoryMap::~MemoryMap()
+{
+	if(program_rom_area != nullptr)
+		delete program_rom_area;
+	if(video_ram_area != nullptr)
+		delete video_ram_area;
+	if(external_ram_area != nullptr)
+		delete external_ram_area;
+	if(internal_ram_area != nullptr)
+		delete internal_ram_area;
+	if(oam_area != nullptr)
+		delete oam_area;
+	if(mmio_area != nullptr)
+		delete mmio_area;
+	if(high_ram_area != nullptr)
+		delete high_ram_area;
+}
+
 MemoryRegion* MemoryMap::GetRegionFromAddress(uint16_t address)
 {
 	if(address >= PGROM_OFFSET)

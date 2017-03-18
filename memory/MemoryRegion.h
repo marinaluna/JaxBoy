@@ -14,6 +14,8 @@ protected:
 	MemoryRegion(uint16_t offset, uint16_t size);
 
 public:
+	~MemoryRegion();
+	
 	void memcpy(uint16_t offset, void* dataptr, uint16_t bytes);
 
 	virtual void write8(uint16_t address, uint8_t data);

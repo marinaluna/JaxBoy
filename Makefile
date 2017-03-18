@@ -2,14 +2,17 @@ BINARY := build/byteboy
 SRCS := $(shell find . -iname "*.cpp")
 OBJS := $(addprefix build/,$(SRCS:.cpp=.o))
 
+NEEDED_LIBS := libminifb.a
+NEEDED_FRAMEWORKS := CoreGraphics AppKit
+
 CXX := clang++
-LD := $(CXX)
+LD := $(CXX) $(addprefix libs/,$(NEEDED_LIBS)) $(addprefix -framework ,$(NEEDED_FRAMEWORKS))
 override CXXFLAGS += -std=c++11
 override LDFLAGS += $(CXXFLAGS)
 
 all:$(BINARY)
 
-$(BINARY):$(OBJS)
+$(BINARY):$(OBJS) $(addprefix libs/,$(NEEDED_LIBS))
 	$(LD) $(LDFLAGS) -o $@ $^
 
 build/%.o:%.cpp

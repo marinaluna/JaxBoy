@@ -1,6 +1,6 @@
 #include "GameBoy.h"
-#include "constants.h"
 #include "memory/MemoryMap.h"
+#include "constants.h"
 
 #include <cstdio>
 
@@ -38,26 +38,56 @@ Processor::Processor()
 {
 	reg_PC = uint16_t(0x0000);
 	reg_AF = reg_BC = reg_DE = reg_HL = uint16_t(0x0000);
-}
 
-int Processor::Tick()
-{
-	int cycles = ExecuteAt(reg_PC);
+	// by default, step 1 tick at a time
+	Step = 1;
 
-
-	// TODO
+	// Temporary stuff so the bootrom doesn't hang
 	// Fake LY
-	if(READ8(0xFF40) & 0B10000000)
+	if(READ8(0xFF40) & BIT7_MASK)
 	{
 		WRITE8(0xFF44, READ8(0xFF44) + 1);
 	}
 	// Fake Nintendo Logo checksum
-	for(int i = 0; i < 56; i++)
+	for(int i = 0; i < 0x30; i++)
 	{
 		WRITE8(0x104 + i, READ8(0xa8 + i));
 	}
+}
 
+int Processor::Tick()
+{
+	if(GameBoy::IsDebugMode)
+	{
+		DebugStep();
+	}
+
+	int cycles = ExecuteAt(reg_PC);
 	return cycles;
+}
+
+void Processor::DebugStep()
+{
+	// Basic "debugger":
+	// Step CPU the specified number of ticks
+	if(Step == 1)
+	{
+		char input[10];
+		// waits for input
+		if(fgets(input, 10, stdin) != NULL)
+		{
+			Step = std::atoi(input);
+			// If Enter alone was pressed, or garbage was entered
+			if(Step == 0)
+			{
+				Step = 1;
+			}
+		}
+	}
+	else
+	{
+		--Step;
+	}
 }
 
 int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
@@ -101,7 +131,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_BC.High();
 		LENGTHCYCLES(1, 4);
-		SETFLAGS((reg_BC.High() == 0)? 1 : 0, 1, -1, -1);
+		SETFLAGS(
+			(reg_BC.High() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x06: // LD B, imm8
@@ -152,6 +184,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_BC.Low();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_BC.Low() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x0E: // LD C, imm8
@@ -202,6 +237,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_DE.High();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_DE.High() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x16: // LD D, imm8
@@ -212,7 +250,7 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	}
 	case 0x17: // RLA
 	{
-		int8_t carry = CHECKBIT(BIT7_MASK, reg_AF.High());
+		int8_t carry = CHECKBIT(BIT7_MASK, reg_AF.High())? 1 : 0;
 		reg_AF.High() <<= 1;
 		SETBIT(BIT0_MASK, reg_AF.High(), CHECKFLAG(FLAG_CARRY));
 		SETFLAGS(0, 0, 0, carry);
@@ -221,7 +259,7 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	}
 	case 0x18: // JR imm8
 	{
-		reg_PC.operator+=((int16_t)READ8(address + 1));
+		reg_PC = (uint16_t)((uint16_t)reg_PC + (int8_t)READ8(address + 1));
 		LENGTHCYCLES(2, 12);
 		break;
 	}
@@ -253,6 +291,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_DE.Low();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_DE.Low() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x1E: // LD E, imm8
@@ -313,6 +354,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_HL.High();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_HL.High() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x26: // LD H, imm8
@@ -369,6 +413,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_HL.Low();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_HL.Low() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x2E: // LD L, imm8
@@ -425,6 +472,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		WRITE8(reg_HL, READ8(reg_HL) - 1);
 		LENGTHCYCLES(1, 12);
+		SETFLAGS(
+			(READ8(reg_HL) == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x36: // LD (HL), imm8
@@ -481,6 +531,9 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	{
 		--reg_AF.High();
 		LENGTHCYCLES(1, 4);
+		SETFLAGS(
+			(reg_AF.High() == 0)? 1 : 0,
+			1, -1, -1);
 		break;
 	}
 	case 0x3E: // LD A, imm8
@@ -1293,10 +1346,12 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 	case 0xCD: // CALL imm16
 	{
 		reg_SP -= 2;
-		WRITE16(reg_SP, reg_PC);
+		// Push PC + 2 onto the stack so it
+		// returns to the following instruction
+		WRITE16(reg_SP, reg_PC + (uint16_t) 2);
 		reg_PC = READ16(address + 1);
 
-		LENGTHCYCLES(0, 24);
+		LENGTHCYCLES(3, 24);
 		break;
 	}
 
@@ -1306,10 +1361,10 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 		LENGTHCYCLES(2, 12);
 		break;
 	}
-	case 0xE2: // LD A, (C)
+	case 0xE2: // LD (0xFF00+C), A
 	{
-		reg_AF.High() = READ8(0xFF00 + reg_BC.Low());
-		LENGTHCYCLES(2, 8);
+		WRITE8(0xFF00 + reg_BC.Low(), reg_AF.High());
+		LENGTHCYCLES(1, 8);
 		break;
 	}
 	case 0xEA: // LD (imm16), A
@@ -1349,7 +1404,12 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 		}
 	}
 
-	reg_PC += (uint16_t)instruction_length;
+	// If this was a CALL don't increment PC after the jump
+	if(opcode != 0xC4 && opcode != 0xCC && opcode != 0xCD && opcode != 0xD4 && opcode != 0xDC)
+	{
+		reg_PC += (uint16_t)instruction_length;
+	}
+
 	return cycles_this_tick;
 }
 
@@ -1361,7 +1421,7 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& in
 	{
 	case 0x11: // RL C
 	{
-		int8_t carry = CHECKBIT(BIT7_MASK, reg_BC.Low());
+		int8_t carry = CHECKBIT(BIT7_MASK, reg_AF.High())? 1 : 0;
 		reg_BC.Low() <<= 1;
 		SETBIT(BIT0_MASK, reg_BC.Low(), CHECKFLAG(FLAG_CARRY));
 		SETFLAGS(0, 0, 0, carry);
@@ -1370,7 +1430,10 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& in
 	}
 	case 0x7C: // BIT 7, H
 	{
-		SETFLAGS(CHECKBIT(BIT7_MASK, reg_HL.High()), 0, 1, -1);
+		SETFLAGS(
+			// Set Z if bit 7 is not set
+			(CHECKBIT(BIT7_MASK, reg_HL.High()) == 0)? 1 : 0,
+				0, 1, -1);
 		LENGTHCYCLES(2, 8);
 		break;
 	}

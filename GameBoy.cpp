@@ -1,5 +1,6 @@
 #include "GameCart.h"
 #include "Processor.h"
+#include "PPU.h"
 #include "constants.h"
 
 #include "memory/MemoryMap.h"
@@ -12,8 +13,9 @@
 #include "GameBoy.h"
 
 
-GameBoy* GameBoy::instance;
 bool GameBoy::IsDebugMode = false;
+
+GameBoy* GameBoy::instance;
 GameBoy* GameBoy::GetGameBoy()
 {
 	return instance;
@@ -26,19 +28,45 @@ GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 
 	instance = this;
 
-	processor = new Processor();
 	memory_map = new MemoryMap(MEMORY_MAP_SIZE);
+	processor = new Processor();
+	ppu = new PPU();
 
+	Stopped = false;
+
+	// Loads external bootrom binary for now
 	LoadBootrom(bootrom_path);
+}
+
+GameBoy::~GameBoy()
+{
+	if(ppu != nullptr)
+		delete ppu;
+	if(processor != nullptr)
+		delete processor;
+	if(memory_map != nullptr)
+		delete memory_map;
 }
 
 void GameBoy::Run()
 {
 	uint32_t i = 0;
-	while(true)
+	while(!Stopped)
 	{
 		int cycles = processor->Tick();
+		
+		// if Escape was pressed or the Window was closed
+		if(ppu->Tick() == -1)
+		{
+			Stop();
+		}
 	}
+}
+
+void GameBoy::Stop()
+{
+	printf("\n\n\nExiting GameBoy...\n\n\n");
+	Stopped = true;
 }
 
 void GameBoy::LoadBootrom(const char* bootrom_path)
@@ -70,6 +98,5 @@ void GameBoy::SystemError(const char* error_msg, ...)
 	va_start(args, error_msg);
 	printf("ERROR: "); vprintf(error_msg, args);
 	va_end(args);
-	// TODO: Gracefully exit from fatal errors
-	exit(0);
+	instance->Stop();
 }
