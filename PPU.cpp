@@ -222,28 +222,45 @@ uint8_t PPU::ReadRegister(uint16_t address)
 	return 0x00;
 }
 
+#include <cstdio>
+
 void PPU::UpdateFrame()
 {
 	// Converts the GameBoy's old-fashioned 8-bit framebuffer to
 	// our modern high-tech fr4m3buff3r 2000
 
-	// TODO: This code is *terrible*
+	// I can't believe the scrolling code works
 	for(int y = 0; y < 18; y++)
 	{
 		for(int x = 0; x < 20; x++)
 		{
 			uint8_t scYtile = floor(ScrollY / 8);
-			// TODO: This grabs pixels to the wrong tile with the current code,
-			// fix this by more accurately calculating the Tile to use
-			uint8_t scYpixel = 0;//(ScrollY % 8);
+			uint8_t scYpixel = (ScrollY % 8);
+			uint8_t tophalf = (8 - scYpixel);
 			uint8_t tileID = GameBoy::Read8(0x9800 + (((y + scYtile) * 32) + x));
 
-			for(int py = 0; py < 8; py++)
+			for(int py = 0; py < tophalf; py++)
 			{
 				for(int px = 0; px < 8; px++)
 				{
 					// TODO: math iz hurd
 					framebuffer[(((y * 8) + py + 24) * WINDOW_WIDTH) + ((x * 8) + px + 1)] = BGPalette[BGMap[tileID][((py + scYpixel) * 8) + px]];
+				}
+			}
+			// If there's a scroll,
+			// complete the bottom half of the tile using
+			// the image of the next tile down
+			if(tophalf != 0)
+			{
+				// fetch the next tile down
+				uint8_t tileID = GameBoy::Read8(0x9800 + (((y + scYtile + 1) * 32) + x));
+				for(int ny = 0; ny < scYpixel; ny++)
+				{
+					for(int px = 0; px < 8; px++)
+					{
+						// Somehow this works
+						framebuffer[(((y * 8) + tophalf + ny + 24) * WINDOW_WIDTH) + ((x * 8) + px + 1)] = BGPalette[BGMap[tileID][(ny * 8) + px]];
+					}
 				}
 			}
 		}

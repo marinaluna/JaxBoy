@@ -24,7 +24,7 @@ GameBoy* GameBoy::GetGameBoy()
 GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 {
 	// TODO: add this to boot args
-	IsDebugMode = true;
+	IsDebugMode = false;
 
 	instance = this;
 
@@ -68,7 +68,7 @@ void GameBoy::Run()
 			Stop();
 		}
 	}
-	printf("\n\n\nExiting GameBoy...\n\n\n");
+	printf("\n\n\nExiting JaxBoy...\n\n\n");
 }
 
 void GameBoy::Stop()
