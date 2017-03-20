@@ -1411,11 +1411,11 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 		if(instruction_length == 2 || instruction_length == 3)
 		{
 			uint16_t operand = (instruction_length == 2)? GameBoy::Read8(address + 1) : GameBoy::Read16(address + 1);
-			//printf("OPCODE %#02x with operand %#04x at address %#04x\n", opcode, operand, address);
+			printf("OPCODE %#02x with operand %#04x at address %#04x\n", opcode, operand, address);
 		}
 		else
 		{
-			//printf("OPCODE %#02x at address %#04x\n", opcode, address);
+			printf("OPCODE %#02x at address %#04x\n", opcode, address);
 		}
 	}
 
@@ -1461,11 +1461,11 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& in
 		if(instruction_length == 3 || instruction_length == 4)
 		{
 			uint16_t operand = (instruction_length == 3)? GameBoy::Read8(address + 1) : GameBoy::Read16(address + 1);
-			//printf("	EXTENDED OPCODE %#02x with operand %#04x at address %#04x\n", cb_opcode, operand, address);
+			printf("	EXTENDED OPCODE %#02x with operand %#04x at address %#04x\n", cb_opcode, operand, address);
 		}
 		else
 		{
-			//printf("	EXTENDED OPCODE %#02x at address %#04x\n", cb_opcode, address);
+			printf("	EXTENDED OPCODE %#02x at address %#04x\n", cb_opcode, address);
 		}
 	}
 }
