@@ -237,13 +237,14 @@ void PPU::UpdateFrame()
 			uint8_t scYtile = floor(ScrollY / 8);
 			uint8_t scYpixel = (ScrollY % 8);
 			uint8_t tophalf = (8 - scYpixel);
-			uint8_t tileID = GameBoy::Read8(0x9800 + (((y + scYtile) * 32) + x));
+			uint8_t tileID;
 
 			for(int py = 0; py < tophalf; py++)
 			{
 				for(int px = 0; px < 8; px++)
 				{
 					// TODO: math iz hurd
+					tileID = GameBoy::Read8(0x9800 + (((y + scYtile) * 32) + x));
 					framebuffer[(((y * 8) + py + 24) * WINDOW_WIDTH) + ((x * 8) + px + 1)] = BGPalette[BGMap[tileID][((py + scYpixel) * 8) + px]];
 				}
 			}
@@ -253,7 +254,7 @@ void PPU::UpdateFrame()
 			if(tophalf != 0)
 			{
 				// fetch the next tile down
-				uint8_t tileID = GameBoy::Read8(0x9800 + (((y + scYtile + 1) * 32) + x));
+				tileID = GameBoy::Read8(0x9800 + (((y + scYtile + 1) * 32) + x));
 				for(int ny = 0; ny < scYpixel; ny++)
 				{
 					for(int px = 0; px < 8; px++)

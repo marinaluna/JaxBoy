@@ -1,6 +1,8 @@
 # JaxBoy
 A WIP GameBoy emulator written in C++
 
+![animated](screenshots/startup.gif)
+
 ## Description
 
 JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. Currently it can only play through the bootrom, and it does not load any roms yet. It is WIP and is very inaccurate and incomplete.
