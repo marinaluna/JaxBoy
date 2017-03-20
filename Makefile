@@ -1,4 +1,4 @@
-BINARY := build/byteboy
+BINARY := build/jaxboy
 SRCS := $(shell find . -iname "*.cpp")
 OBJS := $(addprefix build/,$(SRCS:.cpp=.o))
 

@@ -25,7 +25,7 @@ uint8_t PPU::BGMap[128][8*8];
 PPU::PPU()
 {
 	// initialize the LCD
-	mfb_open("Gameboy Emulator", WINDOW_WIDTH, WINDOW_HEIGHT);
+	mfb_open("JaxBoy", WINDOW_WIDTH, WINDOW_HEIGHT);
 	framebuffer = new Color[WINDOW_WIDTH * WINDOW_HEIGHT];
 	// Setup a blank palette
 	BGPalette[0] = BGPalette[1] = BGPalette[2] = BGPalette[3] = LCD_WHITE;
