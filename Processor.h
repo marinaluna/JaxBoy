@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cstdint>
 
 
@@ -38,6 +37,8 @@ class Processor
 	Reg16Bit	reg_HL;
 
 	int Step;
+	uint16_t Breakpoint;
+	bool BreakpointSet;
 
 public:
 	Processor();

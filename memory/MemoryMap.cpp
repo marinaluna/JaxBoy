@@ -1,7 +1,8 @@
-#include "MemoryRegion.h"
-
 #include "../GameBoy.h"
-#include "../constants.h"
+#include "../PPU.h"
+#include "../util/Macros.h"
+
+#include "MemoryRegion.h"
 
 #include "MemoryMap.h"
 
@@ -76,9 +77,31 @@ MemoryRegion* MemoryMap::GetRegionFromAddress(uint16_t address)
 	return NULL;
 }
 
+void MemoryMap::IOSpecialWrite(uint16_t address, uint8_t data)
+{
+	// PPU registers; ignore DMA though
+	if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
+	{
+		GameBoy::GetPPU().WriteRegister(address, data);
+	}
+}
+
+bool MemoryMap::IOSpecialRead(uint16_t address, uint8_t& retval)
+{
+	if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
+	{
+		retval = GameBoy::GetPPU().ReadRegister(address);
+		return true;
+	}
+
+	return false;
+}
+
 // All reads and writes are in little endian
 void MemoryMap::Write8(uint16_t address, uint8_t data)
 {
+	IOSpecialWrite(address, data);
+
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)
 	{
@@ -97,6 +120,12 @@ void MemoryMap::Write16(uint16_t address, uint16_t data)
 }
 uint8_t MemoryMap::Read8(uint16_t address)
 {
+	uint8_t specialret;
+	if(IOSpecialRead(address, specialret))
+	{
+		return specialret;
+	}
+
 	MemoryRegion* region = GetRegionFromAddress(address);
 	if(region == NULL)
 	{

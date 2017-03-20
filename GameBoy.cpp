@@ -1,14 +1,14 @@
 #include "GameCart.h"
 #include "Processor.h"
 #include "PPU.h"
-#include "constants.h"
+
+#include "util/Macros.h"
 
 #include "memory/MemoryMap.h"
 #include "memory/MemoryRegion.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstdarg>
+#include <cstdio> // for fread
+#include <cstdarg> // for va
 
 #include "GameBoy.h"
 
@@ -28,14 +28,21 @@ GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 
 	instance = this;
 
-	memory_map = new MemoryMap(MEMORY_MAP_SIZE);
 	processor = new Processor();
 	ppu = new PPU();
+	memory_map = new MemoryMap(MEMORY_MAP_SIZE);
 
 	Stopped = false;
 
 	// Loads external bootrom binary for now
 	LoadBootrom(bootrom_path);
+
+	// Fake Nintendo Logo checksum
+	// Temporary so the bootrom doesn't hang
+	for(int i = 0; i < 0x30; i++)
+	{
+		Write8(0x104 + i, Read8(0xa8 + i));
+	}
 }
 
 GameBoy::~GameBoy()
@@ -54,18 +61,18 @@ void GameBoy::Run()
 	while(!Stopped)
 	{
 		int cycles = processor->Tick();
-		
+
 		// if Escape was pressed or the Window was closed
-		if(ppu->Tick() == -1)
+		if(ppu->Tick(cycles) == -1)
 		{
 			Stop();
 		}
 	}
+	printf("\n\n\nExiting GameBoy...\n\n\n");
 }
 
 void GameBoy::Stop()
 {
-	printf("\n\n\nExiting GameBoy...\n\n\n");
 	Stopped = true;
 }
 
@@ -73,12 +80,12 @@ void GameBoy::LoadBootrom(const char* bootrom_path)
 {
 	FILE* file = fopen(bootrom_path, "rb");
 	
-	uint8_t* buffer = (uint8_t*) malloc(0x100);
+	uint8_t* buffer = new uint8_t[0x100];
 	fread(buffer, 0x100, 1, file);
 
 	GetMemory().GetRegionFromAddress(0x0000)->memcpy(0x0000, (void*) buffer, 0x100);
 
-	free(buffer);
+	delete[] buffer;
 	fclose(file);
 }
 
@@ -90,6 +97,11 @@ MemoryMap& GameBoy::GetMemory()
 Processor& GameBoy::GetCPU()
 {
 	return *GetGameBoy()->processor;
+}
+
+PPU& GameBoy::GetPPU()
+{
+	return *GetGameBoy()->ppu;
 }
 
 void GameBoy::SystemError(const char* error_msg, ...)

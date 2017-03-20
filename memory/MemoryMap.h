@@ -1,9 +1,7 @@
 #pragma once
-
 #include <cstdlib>
 
 class MemoryRegion;
-
 class MemoryMap
 {
 	MemoryRegion* program_rom_area;
@@ -19,6 +17,9 @@ public:
 	~MemoryMap();
 
 	MemoryRegion* GetRegionFromAddress(uint16_t address);
+
+	void IOSpecialWrite(uint16_t address, uint8_t data);
+	bool IOSpecialRead(uint16_t address, uint8_t& retval);
 
 	void Write8(uint16_t address, uint8_t data);
 	void Write16(uint16_t address, uint16_t data);

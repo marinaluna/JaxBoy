@@ -1,6 +1,5 @@
 #pragma once
-
-#include "../constants.h"
+#include "../util/Macros.h"
 
 #include <cstdint>
 

@@ -1,5 +1,4 @@
-#include <cstdlib>
-#include <cstring>
+#include <cstring> // for memcpy, memset
 
 #include "MemoryRegion.h"
 
@@ -7,7 +6,7 @@
 MemoryRegion::MemoryRegion(uint16_t offset, uint16_t size)
 :offset(offset)
 {
-	memory = (uint8_t*) malloc(size);
+	memory = new uint8_t[size];
 	memset((void*) memory, 0x00, size);
 }
 

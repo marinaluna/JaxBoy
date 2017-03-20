@@ -1,5 +1,4 @@
-#ifndef __CONSTANTS_H_
-#define __CONSTANTS_H_
+#pragma once
 
 #define MEMORY_MAP_SIZE					0x10000
 #define PGROM_OFFSET					0x0000
@@ -21,9 +20,7 @@
 #define BIT6_MASK					0b01000000
 #define BIT7_MASK					0b10000000
 
-#define FLAG_ZERO					 BIT7_MASK
-#define FLAG_SUB					 BIT6_MASK
-#define FLAG_HALF					 BIT5_MASK
-#define FLAG_CARRY					 BIT4_MASK
-
-#endif
+#define SETBIT(mask, data, value)													\
+		data = ((data & ~mask) | ((value > 0)? mask : 0))
+#define CHECKBIT(mask, data)														\
+		(data & mask)
