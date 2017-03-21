@@ -9,136 +9,136 @@
 
 MemoryMap::MemoryMap(size_t size)
 {
-	program_rom_area = new PGROM(0x8000);
-	video_ram_area = new VRAM(0x2000);
-	external_ram_area = new EWRAM(0x2000);
-	internal_ram_area = new WRAM(0x2000);
-	oam_area = new OAM(0xA0);
-	mmio_area = new MMIO(0x80);
-	high_ram_area = new HighRAM(0x7F);
+    program_rom_area = new PGROM(0x8000);
+    video_ram_area = new VRAM(0x2000);
+    external_ram_area = new EWRAM(0x2000);
+    internal_ram_area = new WRAM(0x2000);
+    oam_area = new OAM(0xA0);
+    mmio_area = new MMIO(0x80);
+    high_ram_area = new HighRAM(0x7F);
 }
 
 MemoryMap::~MemoryMap()
 {
-	if(program_rom_area != nullptr)
-		delete program_rom_area;
-	if(video_ram_area != nullptr)
-		delete video_ram_area;
-	if(external_ram_area != nullptr)
-		delete external_ram_area;
-	if(internal_ram_area != nullptr)
-		delete internal_ram_area;
-	if(oam_area != nullptr)
-		delete oam_area;
-	if(mmio_area != nullptr)
-		delete mmio_area;
-	if(high_ram_area != nullptr)
-		delete high_ram_area;
+    if(program_rom_area != nullptr)
+        delete program_rom_area;
+    if(video_ram_area != nullptr)
+        delete video_ram_area;
+    if(external_ram_area != nullptr)
+        delete external_ram_area;
+    if(internal_ram_area != nullptr)
+        delete internal_ram_area;
+    if(oam_area != nullptr)
+        delete oam_area;
+    if(mmio_area != nullptr)
+        delete mmio_area;
+    if(high_ram_area != nullptr)
+        delete high_ram_area;
 }
 
 MemoryRegion* MemoryMap::GetRegionFromAddress(uint16_t address)
 {
-	if(address >= PGROM_OFFSET)
-	{
-		if(address >= VRAM_OFFSET)
-		{
-			if(address >= EWRAM_OFFSET)
-			{
-				if(address >= WRAM_OFFSET)
-				{
-					if(address >= FORBIDDEN1_AREA_OFFSET)
-					{
-						if(address >= OAM_OFFSET)
-						{
-							if(address >= FORBIDDEN2_AREA_OFFSET)
-							{
-								if(address >= MMIO_OFFSET)
-								{
-									if(address >= HIGH_RAM_OFFSET)
-									{
-										return high_ram_area;
-									}
-									return mmio_area;
-								}
-								return NULL;
-							}
-							return oam_area;
-						}
-						return NULL;
-					}
-					return internal_ram_area;
-				}
-				return external_ram_area;
-			}
-			return video_ram_area;
-		}
-		return program_rom_area;
-	}
-	return NULL;
+    if(address >= PGROM_OFFSET)
+    {
+        if(address >= VRAM_OFFSET)
+        {
+            if(address >= EWRAM_OFFSET)
+            {
+                if(address >= WRAM_OFFSET)
+                {
+                    if(address >= FORBIDDEN1_AREA_OFFSET)
+                    {
+                        if(address >= OAM_OFFSET)
+                        {
+                            if(address >= FORBIDDEN2_AREA_OFFSET)
+                            {
+                                if(address >= MMIO_OFFSET)
+                                {
+                                    if(address >= HIGH_RAM_OFFSET)
+                                    {
+                                        return high_ram_area;
+                                    }
+                                    return mmio_area;
+                                }
+                                return NULL;
+                            }
+                            return oam_area;
+                        }
+                        return NULL;
+                    }
+                    return internal_ram_area;
+                }
+                return external_ram_area;
+            }
+            return video_ram_area;
+        }
+        return program_rom_area;
+    }
+    return NULL;
 }
 
 void MemoryMap::IOSpecialWrite(uint16_t address, uint8_t data)
 {
-	// PPU registers; ignore DMA though
-	if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
-	{
-		GameBoy::GetPPU().WriteRegister(address, data);
-	}
+    // PPU registers; ignore DMA though
+    if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
+    {
+        GameBoy::GetPPU().WriteRegister(address, data);
+    }
 }
 
 bool MemoryMap::IOSpecialRead(uint16_t address, uint8_t& retval)
 {
-	if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
-	{
-		retval = GameBoy::GetPPU().ReadRegister(address);
-		return true;
-	}
+    if(address != 0xFF46 && address >= 0xFF40 && address <= 0xFF4B)
+    {
+        retval = GameBoy::GetPPU().ReadRegister(address);
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 // All reads and writes are in little endian
 void MemoryMap::Write8(uint16_t address, uint8_t data)
 {
-	IOSpecialWrite(address, data);
+    IOSpecialWrite(address, data);
 
-	MemoryRegion* region = GetRegionFromAddress(address);
-	if(region == NULL)
-	{
-		GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
-	}
-	region->write8(address, data);
+    MemoryRegion* region = GetRegionFromAddress(address);
+    if(region == NULL)
+    {
+        GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
+    }
+    region->write8(address, data);
 }
 void MemoryMap::Write16(uint16_t address, uint16_t data)
 {
-	MemoryRegion* region = GetRegionFromAddress(address);
-	if(region == NULL)
-	{
-		GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
-	}
-	region->write16(address, data);
+    MemoryRegion* region = GetRegionFromAddress(address);
+    if(region == NULL)
+    {
+        GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
+    }
+    region->write16(address, data);
 }
 uint8_t MemoryMap::Read8(uint16_t address)
 {
-	uint8_t specialret;
-	if(IOSpecialRead(address, specialret))
-	{
-		return specialret;
-	}
+    uint8_t specialret;
+    if(IOSpecialRead(address, specialret))
+    {
+        return specialret;
+    }
 
-	MemoryRegion* region = GetRegionFromAddress(address);
-	if(region == NULL)
-	{
-		GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
-	}
-	return region->read8(address);
+    MemoryRegion* region = GetRegionFromAddress(address);
+    if(region == NULL)
+    {
+        GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
+    }
+    return region->read8(address);
 }
 uint16_t MemoryMap::Read16(uint16_t address)
 {
-	MemoryRegion* region = GetRegionFromAddress(address);
-	if(region == NULL)
-	{
-		GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
-	}
-	return region->read16(address);
+    MemoryRegion* region = GetRegionFromAddress(address);
+    if(region == NULL)
+    {
+        GameBoy::SystemError("Attemped to access forbidden memory at address %#04x\n", address);
+    }
+    return region->read16(address);
 }

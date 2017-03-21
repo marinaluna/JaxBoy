@@ -19,7 +19,7 @@ build/%.o:%.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 run:$(BINARY)
-	@$(BINARY) roms/bootrom.bin roms/blue.gb
+	@$(BINARY) roms/bootrom.bin roms/tetris.gb
 
 clean:
 	rm -rf build/*
