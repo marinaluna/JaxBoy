@@ -24,26 +24,19 @@ GameBoy* GameBoy::GetGameBoy()
 GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 {
     // TODO: add this to boot args
-    IsDebugMode = true;
+    IsDebugMode = false;
 
     instance = this;
 
     processor = new Processor();
     ppu = new PPU();
-    memory_map = new MemoryMap(MEMORY_MAP_SIZE);
+    memory_map = new MemoryMap();
 
     Stopped = false;
 
     LoadRom(rom_name);
     // Bootrom LLE rather than HLE for now
     LoadBootrom(bootrom_path);
-
-    // Fake Nintendo Logo checksum
-    // Temporary so the bootrom doesn't hang
-    for(int i = 0; i < 0x30; i++)
-    {
-        Write8(0x104 + i, Read8(0xa8 + i));
-    }
 }
 
 GameBoy::~GameBoy()
@@ -84,8 +77,6 @@ void GameBoy::LoadRom(const char* rom_name)
     uint8_t* buffer = new uint8_t[0x8000];
     fread(buffer, 0x8000, 1, file);
 
-    // TODO: Save interrupt vertors so we don't have to fetch them again later
-    // after removing the bootrom
     GetMemory().GetRegionFromAddress(0x0000)->memcpy(0x0000, (void*) buffer, 0x8000);
 
     loaded_rom = new Rom(rom_name, buffer);

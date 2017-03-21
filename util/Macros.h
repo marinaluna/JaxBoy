@@ -1,15 +1,15 @@
 #pragma once
 
 #define MEMORY_MAP_SIZE                 0x10000
-#define PGROM_OFFSET                    0x0000
-#define VRAM_OFFSET                     0x8000
-#define EWRAM_OFFSET                    0xA000
-#define WRAM_OFFSET                     0xC000
-#define FORBIDDEN1_AREA_OFFSET          0xE000
-#define OAM_OFFSET                      0xFE00
-#define FORBIDDEN2_AREA_OFFSET          0xFEA0
-#define MMIO_OFFSET                     0xFF00
-#define HIGH_RAM_OFFSET                 0xFF80
+#define PGROM_REGION                    0x0000
+#define VRAM_REGION                     0x8000
+#define EWRAM_REGION                    0xA000
+#define WRAM_REGION                     0xC000
+#define FORBIDDEN1_REGION               0xE000
+#define OAM_REGION                      0xFE00
+#define FORBIDDEN2_REGION               0xFEA0
+#define MMIO_REGION                     0xFF00
+#define HIGH_RAM_REGION                 0xFF80
 
 #define BIT0_MASK                       0b00000001
 #define BIT1_MASK                       0b00000010

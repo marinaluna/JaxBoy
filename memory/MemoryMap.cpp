@@ -7,72 +7,79 @@
 #include "MemoryMap.h"
 
 
-MemoryMap::MemoryMap(size_t size)
+MemoryMap::MemoryMap()
 {
-    program_rom_area = new PGROM(0x8000);
-    video_ram_area = new VRAM(0x2000);
-    external_ram_area = new EWRAM(0x2000);
-    internal_ram_area = new WRAM(0x2000);
-    oam_area = new OAM(0xA0);
-    mmio_area = new MMIO(0x80);
-    high_ram_area = new HighRAM(0x7F);
+    // setup memory pages
+    program_rom_region = new MemoryRegion(PGROM_REGION, 0x8000);
+    video_ram_region = new MemoryRegion(VRAM_REGION, 0x2000);
+    external_ram_region = new MemoryRegion(EWRAM_REGION, 0x2000);
+    internal_ram_region = new MemoryRegion(WRAM_REGION, 0x2000);
+    forbidden1_region = new ForbiddenRegion(FORBIDDEN1_REGION, 0x1E00);
+    oam_region = new MemoryRegion(OAM_REGION, 0xA0);
+    forbidden2_region = new ForbiddenRegion(FORBIDDEN2_REGION, 0x60);
+    mmio_region = new MemoryRegion(MMIO_REGION, 0x80);
+    high_ram_region = new MemoryRegion(HIGH_RAM_REGION, 0x7F);
 }
 
 MemoryMap::~MemoryMap()
 {
-    if(program_rom_area != nullptr)
-        delete program_rom_area;
-    if(video_ram_area != nullptr)
-        delete video_ram_area;
-    if(external_ram_area != nullptr)
-        delete external_ram_area;
-    if(internal_ram_area != nullptr)
-        delete internal_ram_area;
-    if(oam_area != nullptr)
-        delete oam_area;
-    if(mmio_area != nullptr)
-        delete mmio_area;
-    if(high_ram_area != nullptr)
-        delete high_ram_area;
+    if(program_rom_region != nullptr)
+        delete program_rom_region;
+    if(video_ram_region != nullptr)
+        delete video_ram_region;
+    if(external_ram_region != nullptr)
+        delete external_ram_region;
+    if(internal_ram_region != nullptr)
+        delete internal_ram_region;
+    if(forbidden1_region != nullptr)
+        delete forbidden1_region;
+    if(oam_region != nullptr)
+        delete oam_region;
+    if(forbidden2_region != nullptr)
+        delete forbidden2_region;
+    if(mmio_region != nullptr)
+        delete mmio_region;
+    if(high_ram_region != nullptr)
+        delete high_ram_region;
 }
 
 MemoryRegion* MemoryMap::GetRegionFromAddress(uint16_t address)
 {
-    if(address >= PGROM_OFFSET)
+    if(address >= PGROM_REGION)
     {
-        if(address >= VRAM_OFFSET)
+        if(address >= VRAM_REGION)
         {
-            if(address >= EWRAM_OFFSET)
+            if(address >= EWRAM_REGION)
             {
-                if(address >= WRAM_OFFSET)
+                if(address >= WRAM_REGION)
                 {
-                    if(address >= FORBIDDEN1_AREA_OFFSET)
+                    if(address >= FORBIDDEN1_REGION)
                     {
-                        if(address >= OAM_OFFSET)
+                        if(address >= OAM_REGION)
                         {
-                            if(address >= FORBIDDEN2_AREA_OFFSET)
+                            if(address >= FORBIDDEN2_REGION)
                             {
-                                if(address >= MMIO_OFFSET)
+                                if(address >= MMIO_REGION)
                                 {
-                                    if(address >= HIGH_RAM_OFFSET)
+                                    if(address >= HIGH_RAM_REGION)
                                     {
-                                        return high_ram_area;
+                                        return high_ram_region;
                                     }
-                                    return mmio_area;
+                                    return mmio_region;
                                 }
-                                return NULL;
+                                return forbidden2_region;
                             }
-                            return oam_area;
+                            return oam_region;
                         }
-                        return NULL;
+                        return forbidden1_region;
                     }
-                    return internal_ram_area;
+                    return internal_ram_region;
                 }
-                return external_ram_area;
+                return external_ram_region;
             }
-            return video_ram_area;
+            return video_ram_region;
         }
-        return program_rom_area;
+        return program_rom_region;
     }
     return NULL;
 }

@@ -1195,7 +1195,8 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
     }
     case 0xA7: // AND A
     {
-        reg_AF.High() &= reg_AF.High();
+        SETFLAGS((reg_AF.High() &= reg_HL.High()) == 0? 1 : 0,
+            0, 0, 0);
         SETLENGTHCYCLES(1, 4);
         break;
     }
@@ -1359,7 +1360,18 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
         SETLENGTHCYCLES(1, 4);
         break;
     }
-
+    case 0xC0: // RET NZ
+    {
+        if(CHECKFLAG(FLAG_ZERO) == 0)
+        {
+            reg_PC = GameBoy::Read16(reg_SP);
+            reg_SP += 2;
+            SETLENGTHCYCLES(1, 20);
+            break;
+        }
+        SETLENGTHCYCLES(1, 8);
+        break;
+    }
     case 0xC1: // POP BC
     {
         reg_BC = GameBoy::Read16(reg_SP);
@@ -1385,6 +1397,17 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
         reg_PC = GameBoy::Read16(reg_SP);
         reg_SP += 2;
         SETLENGTHCYCLES(1, 16);
+        break;
+    }
+    case 0xCA: // JP Z, imm16
+    {
+        if(CHECKFLAG(FLAG_ZERO) != 0)
+        {
+            reg_PC = GameBoy::Read16(address + 1);
+            SETLENGTHCYCLES(3, 16);
+            break;
+        }
+        SETLENGTHCYCLES(3, 12);
         break;
     }
     case 0xCB: // CB extension
@@ -1449,10 +1472,23 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
         SETLENGTHCYCLES(2, 8);
         break;
     }
+    case 0xE9: // JP HL
+    {
+        reg_PC = reg_HL;
+        SETLENGTHCYCLES(1, 4);
+        break;
+    }
     case 0xEA: // LD (imm16), A
     {
         GameBoy::Write8(GameBoy::Read16(address + 1), reg_AF.High());
         SETLENGTHCYCLES(3, 16);
+        break;
+    }
+    case 0xEF: // RST 28H
+    {
+        reg_SP -= 2;
+        GameBoy::Write16(reg_SP, reg_PC + (uint16_t) 2);
+        reg_PC = uint16_t(0x0028);
         break;
     }
     case 0xF0: // LDH A, (imm8)
@@ -1519,8 +1555,8 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
         }
     }
 
-    // If this was a CALL or JP don't increment PC after the jump
-    if(opcode != 0xC3 && opcode != 0xC4 && opcode != 0xCC && opcode != 0xCD && opcode != 0xD4 && opcode != 0xDC)
+    // If this was a CALL, JP, or RST don't increment PC after the jump
+    if(opcode != 0xC3 && opcode != 0xC4 && opcode != 0xCC && opcode != 0xCD && opcode != 0xD4 && opcode != 0xDC && opcode != 0xEF)
     {
         reg_PC += (uint16_t)instruction_length;
     }
@@ -1540,6 +1576,14 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& in
         reg_BC.Low() <<= 1;
         SETBIT(BIT0_MASK, reg_BC.Low(), CHECKFLAG(FLAG_CARRY));
         SETFLAGS(0, 0, 0, carry);
+        SETLENGTHCYCLES(2, 8);
+        break;
+    }
+    case 0x37: // SWAP A
+    {
+        reg_AF.High() = ((reg_AF.High() & 0x0F) << 4) | ((reg_AF.High() & 0xF0) >> 4);
+        SETFLAGS( reg_AF.High() == 0? 1 : 0,
+                  0, 0, 0);
         SETLENGTHCYCLES(2, 8);
         break;
     }

@@ -130,10 +130,10 @@ void PPU::WriteRegister(uint16_t address, uint8_t data)
             Control = data;
             break;
         case 0xFF41:
-            InterruptFlags={static_cast<bool>(data&0b1000),
-                            static_cast<bool>(data&0b10000),
-                            static_cast<bool>(data&0b100000),
-                            static_cast<bool>(data&0b1000000)};
+            InterruptFlags={ static_cast<bool>(data&0b1000),
+                             static_cast<bool>(data&0b10000),
+                             static_cast<bool>(data&0b100000),
+                             static_cast<bool>(data&0b1000000)};
             // Note: the other flags are read only
             break;
         case 0xFF42:

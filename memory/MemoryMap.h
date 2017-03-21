@@ -4,16 +4,18 @@
 class MemoryRegion;
 class MemoryMap
 {
-    MemoryRegion* program_rom_area;
-    MemoryRegion* video_ram_area;
-    MemoryRegion* external_ram_area;
-    MemoryRegion* internal_ram_area;
-    MemoryRegion* oam_area;
-    MemoryRegion* mmio_area;
-    MemoryRegion* high_ram_area;
+    MemoryRegion* program_rom_region;
+    MemoryRegion* video_ram_region;
+    MemoryRegion* external_ram_region;
+    MemoryRegion* internal_ram_region;
+    MemoryRegion* forbidden1_region;
+    MemoryRegion* oam_region;
+    MemoryRegion* forbidden2_region;
+    MemoryRegion* mmio_region;
+    MemoryRegion* high_ram_region;
 
 public:
-    MemoryMap(size_t size);
+    MemoryMap();
     ~MemoryMap();
 
     MemoryRegion* GetRegionFromAddress(uint16_t address);

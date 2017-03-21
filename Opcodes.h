@@ -1,6 +1,6 @@
 #pragma once
 #define OP2        "\e[31m%02Xh\e[0m"
-#define OP4        "\e[31m%02Xh\e[0m"
+#define OP4        "\e[31m%04Xh\e[0m"
 
 static const char* OPCODE_LOOKUP[256] = {
     "NOP",
