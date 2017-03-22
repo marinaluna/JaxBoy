@@ -24,7 +24,7 @@ GameBoy* GameBoy::GetGameBoy()
 GameBoy::GameBoy(const char* bootrom_path, const char* rom_name)
 {
     // TODO: add this to boot args
-    IsDebugMode = false;
+    IsDebugMode = true;
 
     instance = this;
 

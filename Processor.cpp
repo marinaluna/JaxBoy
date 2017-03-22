@@ -1542,16 +1542,16 @@ int Processor::ExecuteAt(uint16_t address) // Decodes and executes instruction
 
     if(GameBoy::IsDebugMode && opcode != 0xCB)
     {
+        printf("\e[33m%04Xh:\e[0m  ", address);
         if(instruction_length == 2 || instruction_length == 3)
         {
             uint16_t operand = (instruction_length == 2)? GameBoy::Read8(address + 1) : GameBoy::Read16(address + 1);
-            printf("%04Xh:  ", address);
             printf(OPCODE_LOOKUP[opcode], operand);
             printf("\n");
         }
         else
         {
-            printf("%04Xh:  %s\n", address, OPCODE_LOOKUP[opcode]);
+            printf("%s\n", OPCODE_LOOKUP[opcode]);
         }
     }
 
@@ -1603,19 +1603,21 @@ void Processor::ExecuteCBOpcode(uint16_t address, int& cycles_this_tick, int& in
         break;
     }
     default:
-        GameBoy::SystemError("Unknown EXTENDED OPCODE %02X at address %04Xh!\n", cb_opcode, address);
+        GameBoy::SystemError("Unknown CB OPCODE  %02X  at address %04Xh!\n", cb_opcode, address);
     }
 
     if(GameBoy::IsDebugMode)
     {
+        printf("\e[33m%04Xh:\e[0m  ", address);
         if(instruction_length == 3 || instruction_length == 4)
         {
             uint16_t operand = (instruction_length == 3)? GameBoy::Read8(address + 1) : GameBoy::Read16(address + 1);
-            printf("    EXTENDED OPCODE %02X with operand %04X at address %04Xh\n", cb_opcode, operand, address);
+            printf(CB_OPCODE_LOOKUP[cb_opcode], operand);
+            printf("\n");
         }
         else
         {
-            printf("    EXTENDED OPCODE %02X at address %04Xh\n", cb_opcode, address);
+            printf("%s\n", CB_OPCODE_LOOKUP[cb_opcode]);
         }
     }
 }
