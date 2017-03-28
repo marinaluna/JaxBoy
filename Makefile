@@ -19,8 +19,11 @@ build/%.o:%.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 run:$(BINARY)
-	@$(BINARY) roms/bootrom.bin roms/tetris.gb
+	@$(BINARY) roms/tetris.gb roms/bootrom.bin -debug
 
 clean:
 	rm -rf build/*
-	mkdir -p build/memory
+	mkdir -p build/src/common
+	mkdir -p build/src/core
+	mkdir -p build/src/core/memory
+	mkdir -p build/src/core/processor
