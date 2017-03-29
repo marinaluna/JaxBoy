@@ -16,7 +16,7 @@ $(BINARY):$(OBJS) $(addprefix libs/,$(NEEDED_LIBS))
 	$(LD) $(LDFLAGS) -o $@ $^
 
 build/%.o:%.cpp
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -O2 -c $(CXXFLAGS) $< -o $@
 
 run:$(BINARY)
 	@$(BINARY) roms/tetris.gb roms/bootrom.bin -debug
