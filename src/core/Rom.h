@@ -19,6 +19,10 @@
 #include <vector>
 
 
+namespace Debugger {
+    class Logger;
+}; // namespace Debugger
+
 namespace Core {
 
 class GameBoy;
@@ -42,9 +46,11 @@ class Rom
     Header header;
     // all bytes in the ROM
     std::vector<u8> bytes;
+    // Logger instance for ROM
+    std::shared_ptr<Debugger::Logger> logger;
 
 public:
-    Rom(const std::vector<u8>& bytes);
+    Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debugger::Logger>& logger);
 };
 
 }; // namespace Core

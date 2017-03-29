@@ -30,6 +30,28 @@ Logger::Logger(std::shared_ptr<Core::MemoryMap>& memory_map)
     memory_map (memory_map)
 {}
 
+void Logger::LogMessage(const std::string& msg)
+{
+    std::cout << msg << std::endl;
+}
+
+void Logger::LogError(const std::string& error_msg, bool fatal)
+{
+    // Set the color to red
+    std::cout << "\033[31m\n";
+    if(fatal)
+    {
+        std::cout << "FATAL: ";
+    }
+    else
+    {
+        std::cout << "WARN: ";
+    }
+    std::cout << error_msg;
+    // and back to white again
+    std::cout << "\033[0m\n";
+}
+
 void Logger::LogRegisters(const Core::Processor& processor)
 {
     u8 zero = (processor.F_Zero)? 0b10000000 : 0;

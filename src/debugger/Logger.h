@@ -33,6 +33,9 @@ class Logger
 public:
     Logger(std::shared_ptr<Core::MemoryMap>& memory_map);
 
+    void LogMessage(const std::string& msg);
+    void LogError(const std::string& error_msg, bool fatal);
+
     void LogRegisters(const Core::Processor& processor);
     void LogIORegisters();
     void LogMemory(u16 address, u16 bytes);

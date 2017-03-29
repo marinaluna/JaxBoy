@@ -14,18 +14,25 @@
 
 #include "Rom.h"
 
+#include "../debugger/Logger.h"
+
+#include <string>
 #include <vector>
 #include <algorithm>
 
 
 namespace Core {
 
-Rom::Rom(const std::vector<u8>& bytes)
+Rom::Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debugger::Logger>& logger)
+:
+    logger (logger)
 {
     this->bytes = bytes;
 
     // copy the rom name (in newer carts the end of this is used by manufacturer code)
     std::copy(bytes.begin() + 0x134, bytes.begin() + 0x143, header.Name);
+    logger->LogMessage("Loaded rom: " + std::string(header.Name));
+
     // copy the new manufacturer code
     std::copy(bytes.begin() + 0x13F, bytes.begin() + 0x143, header.Manufacturer);
     header.UsesSGBFeatures = bytes.at(0x146) == 0x03; // 3 means yes, 0 means no

@@ -852,7 +852,7 @@ int Processor::ExecuteAt(u16 address)
             break;
 
         default:
-            std::cerr << "Unknown opcode!\n";
+            logger->LogError("Unknown opcode!", true);
             gameboy->Stop();
     }
 
@@ -890,7 +890,7 @@ u8 Processor::ExecuteCBOpcode(u16 address)
             break;
 
         default:
-            std::cerr << "Unknown opcode!\n";
+            logger->LogError("Unknown extended opcode!", true);
             gameboy->Stop();
     }
 

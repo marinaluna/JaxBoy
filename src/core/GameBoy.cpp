@@ -38,7 +38,7 @@ GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const st
     processor = std::unique_ptr<Processor> (new Processor(this, memory_map, logger));
     ppu = std::unique_ptr<PPU> (new PPU(this, 160+2, 144+25, memory_map, logger));
 
-    game_rom = std::unique_ptr<Rom> (new Rom(rom));
+    game_rom = std::unique_ptr<Rom> (new Rom(rom, logger));
 
     // load boot ROM at 0x0000
     memory_map->WriteBytes(0x0000, bootrom, 0x0000, 0x100);
