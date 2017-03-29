@@ -14,29 +14,30 @@
 
 #pragma once
 
-#include <cstdint>
-#include <vector>
+#include "../common/Types.h"
 
-using u8 = uint8_t;
-using u16 = uint16_t;
-using u32 = uint32_t;
+#include <memory>
 
-using s8 = int8_t;
-using s16 = int16_t;
-using s32 = int32_t;
 
-using Color = u32;
+namespace Core {
+    class MemoryMap;
+    class Processor;
+}; // namespace Core
 
-using MemoryRegion = std::vector<u8>;
+namespace Debugger {
 
-using Reg8 = u8;
-union Reg16
+class Logger
 {
-    u16 word;
+    std::shared_ptr<Core::MemoryMap> memory_map;
 
-    struct
-    {
-        Reg8 high;
-        Reg8 low;
-    };
+public:
+    Logger(std::shared_ptr<Core::MemoryMap>& memory_map);
+
+    void LogRegisters(const Core::Processor& processor);
+    void LogIORegisters();
+    void LogMemory(u16 address, u16 bytes);
+    void LogVRAM();
+    void LogDisassembly(u16 address, u16 bytes);
 };
+
+}; // namespace Debugger

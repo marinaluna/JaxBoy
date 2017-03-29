@@ -29,7 +29,7 @@ void Processor::ld_reg(Reg8& reg, u8 value)
 }
 void Processor::ld_reg(Reg16& reg, u16 value)
 {
-    reg = value;
+    reg.word = value;
 }
 
 // write
@@ -64,7 +64,7 @@ void Processor::dec(Reg16& reg16)
     if(--reg16.low == 0xFF)
         --reg16.high;
 
-    F_Zero = reg16 == 0x0000;
+    F_Zero = reg16.word == 0x0000;
 }
 
 // add
@@ -74,11 +74,11 @@ void Processor::add(Reg8& reg, u8 value)
 }
 void Processor::add(Reg16& reg, u16 value)
 {
-    reg += value;
+    reg.word += value;
 }
 void Processor::add(Reg16& reg, s8 value)
 {
-    reg = static_cast<u16>(reg) + value;
+    reg.word = static_cast<u16>(reg.word) + value;
 }
 void Processor::adc(Reg8& reg, u8 value)
 {
@@ -120,18 +120,18 @@ void Processor::cp(u8 value)
 // jump
 void Processor::jr(s8 amt)
 {
-    reg_PC += amt;
+    reg_PC.word += amt;
 }
 
 void Processor::jp(u16 addr)
 {
-    reg_PC = addr;
+    reg_PC.word = addr;
 }
 
 void Processor::call(u16 addr)
 {
-    push(reg_PC + 2);
-    reg_PC = addr;
+    push(reg_PC.word + 2);
+    reg_PC.word = addr;
 }
 
 void Processor::ret()
@@ -142,14 +142,14 @@ void Processor::ret()
 // stack
 void Processor::push(u16 value)
 {
-    reg_SP -= 2;
-    memory_map->Write16(reg_SP, value);
+    reg_SP.word -= 2;
+    memory_map->Write16(reg_SP.word, value);
 }
 
 void Processor::pop(Reg16& reg16)
 {
-    reg16 = memory_map->Read16(reg_SP);
-    reg_SP += 2;
+    reg16.word = memory_map->Read16(reg_SP.word);
+    reg_SP.word += 2;
 }
 
 // CB opcodes

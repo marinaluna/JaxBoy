@@ -19,6 +19,10 @@
 #include <memory>
 
 
+namespace Debugger {
+    class Logger;
+}; // namespace Debugger
+
 namespace Core {
 
 class GameBoy;
@@ -67,8 +71,10 @@ class PPU
     GameBoy* gameboy;
     std::shared_ptr<MemoryMap> memory_map;
 
+    std::shared_ptr<Debugger::Logger> logger;
+
 public:
-    PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map);
+    PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger);
     ~PPU();
 
     int Tick(int cycles);

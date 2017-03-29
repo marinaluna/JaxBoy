@@ -16,9 +16,9 @@
 #include "Opcodes.h"
 
 #include "../GameBoy.h"
-
 #include "../memory/MemoryMap.h"
-#include "../../common/Types.h"
+
+#include "../../debugger/Logger.h"
 
 #include <memory>
 #include <iostream>
@@ -26,19 +26,20 @@
 
 namespace Core {
 
-Processor::Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map)
+Processor::Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger)
 :
     gameboy (gameboy),
-    memory_map (memory_map)
+    memory_map (memory_map),
+    logger (logger)
 {
+    reg_PC.word = 0x0000;
+    reg_SP.word = 0x0000;
     reg_A = reg_B = reg_C = reg_D = reg_E = reg_H = reg_L = 0x00;
-    reg_PC = 0x0000;
-    reg_SP = 0x0000;
 }
 
 int Processor::Tick()
 {
-    int new_cycles = ExecuteAt(reg_PC);
+    int new_cycles = ExecuteAt(reg_PC.word);
     return new_cycles;
 }
 
@@ -99,18 +100,18 @@ int Processor::ExecuteAt(u16 address)
             ld_reg(reg_A, operand8);
             break;
         case 0x0A:
-            ld_reg(reg_A, memory_map->Read8(reg_BC));
+            ld_reg(reg_A, memory_map->Read8(reg_BC.word));
             break;
         case 0x1A:
-            ld_reg(reg_A, memory_map->Read8(reg_DE));
+            ld_reg(reg_A, memory_map->Read8(reg_DE.word));
             break;
         case 0x2A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL));
-            reg_HL += 1;
+            ld_reg(reg_A, memory_map->Read8(reg_HL.word));
+            reg_HL.word += 1;
             break;
         case 0x3A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL));
-            reg_HL -= 1;
+            ld_reg(reg_A, memory_map->Read8(reg_HL.word));
+            reg_HL.word -= 1;
             break;
         case 0x46:
             ld_reg(reg_B, memory_map->Read8(operand8));
@@ -300,47 +301,47 @@ int Processor::ExecuteAt(u16 address)
             ld_reg(reg_SP, operand16);
             break;
         case 0xF8:
-            ld_reg(reg_HL, reg_SP + static_cast<s8>(operand8));
+            ld_reg(reg_HL, reg_SP.word + static_cast<s8>(operand8));
             break;
 
         // LD (addr), u8
         case 0x02:
-            ld_addr(reg_BC, reg_A);
+            ld_addr(reg_BC.word, reg_A);
             break;
         case 0x12:
-            ld_addr(reg_DE, reg_A);
+            ld_addr(reg_DE.word, reg_A);
             break;
         case 0x22:
-            ld_addr(reg_HL, reg_A);
-            reg_HL += 1;
+            ld_addr(reg_HL.word, reg_A);
+            reg_HL.word += 1;
             break;
         case 0x32:
-            ld_addr(reg_HL, reg_A);
-            reg_HL -= 1;
+            ld_addr(reg_HL.word, reg_A);
+            reg_HL.word -= 1;
             break;
         case 0x36:
-            ld_addr(reg_HL, operand8);
+            ld_addr(reg_HL.word, operand8);
             break;
         case 0x70:
-            ld_addr(reg_HL, reg_B);
+            ld_addr(reg_HL.word, reg_B);
             break;
         case 0x71:
-            ld_addr(reg_HL, reg_C);
+            ld_addr(reg_HL.word, reg_C);
             break;
         case 0x72:
-            ld_addr(reg_HL, reg_D);
+            ld_addr(reg_HL.word, reg_D);
             break;
         case 0x73:
-            ld_addr(reg_HL, reg_E);
+            ld_addr(reg_HL.word, reg_E);
             break;
         case 0x74:
-            ld_addr(reg_HL, reg_H);
+            ld_addr(reg_HL.word, reg_H);
             break;
         case 0x75:
-            ld_addr(reg_HL, reg_L);
+            ld_addr(reg_HL.word, reg_L);
             break;
         case 0x77:
-            ld_addr(reg_HL, reg_A);
+            ld_addr(reg_HL.word, reg_A);
             break;
         case 0xE0:
             ld_addr(0xFF00+operand8, reg_A);
@@ -353,7 +354,7 @@ int Processor::ExecuteAt(u16 address)
             break;
         // LD (addr), u16
         case 0x08:
-            ld_addr(operand16, reg_SP);
+            ld_addr(operand16, reg_SP.word);
             break;
 
         // INC reg8
@@ -458,16 +459,16 @@ int Processor::ExecuteAt(u16 address)
             break;
         // ADD reg16, u16
         case 0x09:
-            add(reg_HL, reg_BC);
+            add(reg_HL, reg_BC.word);
             break;
         case 0x19:
-            add(reg_HL, reg_DE);
+            add(reg_HL, reg_DE.word);
             break;
         case 0x29:
-            add(reg_HL, reg_HL);
+            add(reg_HL, reg_HL.word);
             break;
         case 0x39:
-            add(reg_HL, reg_SP);
+            add(reg_HL, reg_SP.word);
             break;
         // ADD reg16, s8
         case 0xE8:
@@ -673,7 +674,7 @@ int Processor::ExecuteAt(u16 address)
             cp(reg_L);
             break;
         case 0xBE:
-            cp(memory_map->Read8(reg_HL));
+            cp(memory_map->Read8(reg_HL.word));
             break;
         case 0xBF:
             cp(reg_A);
@@ -748,7 +749,7 @@ int Processor::ExecuteAt(u16 address)
             }
             break;
         case 0xE9:
-            jp(memory_map->Read16(reg_HL));
+            jp(memory_map->Read16(reg_HL.word));
             break;
 
         // CALL u16
@@ -824,16 +825,16 @@ int Processor::ExecuteAt(u16 address)
 
         // PUSH reg16
         case 0xC5:
-            push(reg_BC);
+            push(reg_BC.word);
             break;
         case 0xD5:
-            push(reg_DE);
+            push(reg_DE.word);
             break;
         case 0xE5:
-            push(reg_HL);
+            push(reg_HL.word);
             break;
         case 0xF5:
-            push(reg_AF);
+            push(reg_AF.word);
             break;
 
         // POP reg16
@@ -860,14 +861,14 @@ int Processor::ExecuteAt(u16 address)
         // CB opcode
         if(CB_OPCODE_LOOKUP[opcode].inc_pc)
         {
-            reg_PC += CB_OPCODE_LOOKUP[opcode].length;
+            reg_PC.word += CB_OPCODE_LOOKUP[opcode].length;
         }
         return CB_OPCODE_LOOKUP[opcode].cycles;
     }
 
     if(OPCODE_LOOKUP[opcode].inc_pc)
     {
-        reg_PC += OPCODE_LOOKUP[opcode].length;
+        reg_PC.word += OPCODE_LOOKUP[opcode].length;
     }
     return (!branch_taken)? OPCODE_LOOKUP[opcode].cycles : OPCODE_LOOKUP[opcode].cycles_branch;
 }

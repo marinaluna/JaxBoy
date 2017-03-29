@@ -15,11 +15,12 @@
 #include "GameBoy.h"
 #include "PPU.h"
 #include "Rom.h"
-
 #include "memory/MemoryMap.h"
 #include "processor/Processor.h"
 
 #include "../common/Globals.h"
+
+#include "../debugger/Logger.h"
 
 #include <memory>
 #include <vector>
@@ -32,8 +33,10 @@ GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const st
    _Options (options)
 {
     memory_map = std::make_shared<MemoryMap>(this);
-    processor = std::unique_ptr<Processor> (new Processor(this, memory_map));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160+2, 144+25, memory_map));
+
+    logger = std::make_shared<Debugger::Logger>(memory_map);
+    processor = std::unique_ptr<Processor> (new Processor(this, memory_map, logger));
+    ppu = std::unique_ptr<PPU> (new PPU(this, 160+2, 144+25, memory_map, logger));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom));
 

@@ -19,6 +19,10 @@
 #include <memory>
 
 
+namespace Debugger {
+    class Logger;
+}; // namespace Debugger
+
 namespace Core {
 
 class GameBoy;
@@ -27,6 +31,7 @@ class MemoryMap;
 class Processor
 {
     friend class GameBoy;
+    friend class Debugger::Logger;
 
     // 16-bit program counter and stack pointer
     Reg16 reg_PC;
@@ -57,9 +62,11 @@ class Processor
     GameBoy* gameboy;
     std::shared_ptr<MemoryMap> memory_map;
 
+    std::shared_ptr<Debugger::Logger> logger;
+
 public:
     
-    Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map);
+    Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger);
 
     int Tick();
 

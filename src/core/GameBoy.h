@@ -20,6 +20,10 @@
 #include <vector>
 
 
+namespace Debugger {
+    class Logger;
+}; // namespace Debugger
+
 namespace Core {
 
 class Processor;
@@ -53,6 +57,8 @@ private:
     std::unique_ptr<Rom> game_rom;
     // System memory map
     std::shared_ptr<MemoryMap> memory_map;
+    // Logger
+    std::shared_ptr<Debugger::Logger> logger;
 
     bool InBootROM = false;
     bool Stopped = false;

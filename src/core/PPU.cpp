@@ -13,10 +13,8 @@
 // limitations under the License.
 
 #include "PPU.h"
-
 #include "memory/MemoryMap.h"
 
-#include "../common/Types.h"
 #include "../common/Globals.h"
 
 #include "../external/MiniFB/MiniFB.h"
@@ -27,12 +25,13 @@
 
 namespace Core {
 
-PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map)
+PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger)
 :
     gameboy (gameboy),
     lcd_width (width),
     lcd_height (height),
-    memory_map (memory_map)
+    memory_map (memory_map),
+    logger (logger)
 {
     // initialize the LCD
     mfb_open(gAppName, width, height);
