@@ -36,7 +36,7 @@ union Reg16
 
     struct
     {
-        Reg8 high;
         Reg8 low;
+        Reg8 high;
     };
 };
