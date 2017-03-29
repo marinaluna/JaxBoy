@@ -5,7 +5,7 @@ OBJS := $(addprefix build/,$(SRCS:.cpp=.o))
 NEEDED_LIBS := libminifb.a
 NEEDED_FRAMEWORKS := CoreGraphics AppKit
 
-CXX := clang++
+CXX := clang++ -flto
 LD := $(CXX) $(addprefix libs/,$(NEEDED_LIBS)) $(addprefix -framework ,$(NEEDED_FRAMEWORKS))
 override CXXFLAGS += -std=c++11
 override LDFLAGS += $(CXXFLAGS)

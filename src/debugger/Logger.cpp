@@ -97,7 +97,7 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
     while(instructions-- > 0)
     {
         // print the address
-        std::cout << "\033[33m0h" << std::setw(4) << std::setfill('0') << std::hex << address << "h: \033[0m";
+        std::cout << "\033[33m" << std::setw(4) << std::setfill('0') << std::hex << address << "h: \033[0m";
 
         opcode = memory_map->Read8(address++);
         if(OPCODE_LOOKUP[opcode].length == 2)
