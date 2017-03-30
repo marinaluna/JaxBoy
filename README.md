@@ -24,11 +24,12 @@ Below is a compatibility table for JaxBoy.
 Not all roms have been tested.
 
 Key:
-| `No stars` | Not tested |
-| :star: | Not Playable |
-| :star::star: | Boots to title screen |
-| :star::star::star: | Playable with glitches |
-| :star::star::star::star: | Perfect |
+| Number of Stars | Definition |
+| --- | --- | --- |
+| `No stars` | Not playable |
+| :star: | Boots to title screen |
+| :star::star: | Playable with glitches |
+| :star::star::star: | Perfect |
 
 | Game | Compatibility | Notes |
 | --- | --- | --- |
