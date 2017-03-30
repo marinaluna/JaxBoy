@@ -23,20 +23,12 @@ The emulator currently runs too fast as there is no frame throttle yet. Compatib
 Below is a compatibility table for JaxBoy.
 Not all roms have been tested.
 
-Key:
-| Number of Stars | Definition |
-| --- | --- | --- |
-| `No stars` | Not playable |
-| :star: | Boots to title screen |
-| :star::star: | Playable with glitches |
-| :star::star::star: | Perfect |
-
 | Game | Compatibility | Notes |
 | --- | --- | --- |
-| Tetris | :star::star: | Boots to the copyright screen. |
-| Super Mario Land | :star: | Does not boot |
-| Donkey Kong | :star: | Does not boot |
-| Pokemon Blue | :star: | Does not boot |
+| Tetris | :large_blue_circle::white_circle::white_circle::white_circle: | Boots to the copyright screen. |
+| Super Mario Land | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
+| Donkey Kong | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
+| Pokemon Blue | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
 
 ## Building and running
 
