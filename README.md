@@ -5,21 +5,37 @@ A WIP GameBoy emulator written in C++
 
 ## Description
 
-JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. Currently it can only play through the bootrom, and it does not load any roms yet. It is WIP and is very inaccurate and incomplete.
+JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. Currently it can only play through the bootrom, and has very basic ROM loading support. It does not play any games yet. It is WIP and is very inaccurate and incomplete.
 
 ## Status
 
-JaxBoy is currently not able to emulate any commercial games. If you can get a binary of the 256-byte GameBoy bootrom and pass it in as build parameter, the emulator will diplay the graphics (no sound) of the bootrom pretty accurately.
+JaxBoy is currently not able to emulate any commercial games. It can currently boot Tetris to the loading copyright screen(this is the only ROM tested). Running the emulator requires that you have access to a GameBoy boot ROM image. It will play through the boot ROM pretty accurately without any graphical glitches.
 
-While performance appears to be pretty good (read: scrolls through the Nintendo(R) screen in a seemingly timely manner), it has not been a priority and therefore is not yet intended to be accurate.
+The emulator currently runs too fast as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better too fast than too slow, eh?).
 
 ## Screenshots
 
 ![bootrom](screenshots/bootrom.png)
+![tetris](screenshots/tetris_launch.png)
 
 ## Known game compatibility
 
-Currently no games are compatible with JaxBoy.
+Below is a compatibility table for JaxBoy.
+Not all roms have been tested.
+
+Key:
+| `No stars` | Not tested |
+| :star: | Not Playable |
+| :star::star: | Boots to title screen |
+| :star::star::star: | Playable with glitches |
+| :star::star::star::star: | Perfect |
+
+| Game | Compatibility | Notes |
+| --- | --- | --- |
+| Tetris | :star::star: | Boots to the copyright screen. |
+| Super Mario Land | :star: | Does not boot |
+| Donkey Kong | :star: | Does not boot |
+| Pokemon Blue | :star: | Does not boot |
 
 ## Building and running
 
