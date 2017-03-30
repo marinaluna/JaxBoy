@@ -39,24 +39,37 @@ Processor::Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, s
 
 int Processor::Tick()
 {
-    int new_cycles = ExecuteAt(reg_PC.word);
+    int new_cycles = ExecuteNext();
     return new_cycles;
 }
 
-// Decodes and executes instruction
-int Processor::ExecuteAt(u16 address)
+// fetches operand and increments PC
+// TODO: inline these
+u8 Processor::GetOperand8()
 {
-    u8 opcode = memory_map->Read8(address);
-    u8 operand8 = memory_map->Read8(address + 1);
-    u16 operand16 = memory_map->Read16(address + 1);
+    return memory_map->Read8(reg_PC.word++);
+}
+
+u16 Processor::GetOperand16()
+{
+    u16 operand = memory_map->Read16(reg_PC.word);
+    reg_PC.word += 2;
+    return operand;
+}
+
+// Decodes and executes instruction
+int Processor::ExecuteNext()
+{
+    u8 opcode = memory_map->Read8(reg_PC.word++);
     bool cb_opcode = false;
     bool branch_taken = false;
+
 
     switch(opcode)
     {
         // CB
         case 0xCB:
-            opcode = ExecuteCBOpcode(address + 1);
+            opcode = ExecuteCBOpcode();
             cb_opcode = true;
             break;
         // NOP
@@ -79,25 +92,25 @@ int Processor::ExecuteAt(u16 address)
         
         // LD reg8, u8
         case 0x06:
-            ld_reg(reg_B, operand8);
+            ld_reg(reg_B, GetOperand8());
             break;
         case 0x0E:
-            ld_reg(reg_C, operand8);
+            ld_reg(reg_C, GetOperand8());
             break;
         case 0x16:
-            ld_reg(reg_D, operand8);
+            ld_reg(reg_D, GetOperand8());
             break;
         case 0x1E:
-            ld_reg(reg_E, operand8);
+            ld_reg(reg_E, GetOperand8());
             break;
         case 0x26:
-            ld_reg(reg_H, operand8);
+            ld_reg(reg_H, GetOperand8());
             break;
         case 0x2E:
-            ld_reg(reg_L, operand8);
+            ld_reg(reg_L, GetOperand8());
             break;
         case 0x3E:
-            ld_reg(reg_A, operand8);
+            ld_reg(reg_A, GetOperand8());
             break;
         case 0x0A:
             ld_reg(reg_A, memory_map->Read8(reg_BC.word));
@@ -106,39 +119,40 @@ int Processor::ExecuteAt(u16 address)
             ld_reg(reg_A, memory_map->Read8(reg_DE.word));
             break;
         case 0x2A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL.word));
-            reg_HL.word += 1;
+            ld_reg(reg_A, memory_map->Read8(reg_HL.word++));
             break;
         case 0x3A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL.word));
-            reg_HL.word -= 1;
+            ld_reg(reg_A, memory_map->Read8(reg_HL.word--));
             break;
         case 0x46:
-            ld_reg(reg_B, memory_map->Read8(operand8));
+            ld_reg(reg_B, memory_map->Read8(reg_HL.word));
             break;
         case 0x4E:
-            ld_reg(reg_C, memory_map->Read8(operand8));
+            ld_reg(reg_C, memory_map->Read8(reg_HL.word));
             break;
         case 0x56:
-            ld_reg(reg_D, memory_map->Read8(operand8));
+            ld_reg(reg_D, memory_map->Read8(reg_HL.word));
             break;
         case 0x5E:
-            ld_reg(reg_E, memory_map->Read8(operand8));
+            ld_reg(reg_E, memory_map->Read8(reg_HL.word));
             break;
         case 0x66:
-            ld_reg(reg_H, memory_map->Read8(operand8));
+            ld_reg(reg_H, memory_map->Read8(reg_HL.word));
             break;
         case 0x6E:
-            ld_reg(reg_L, memory_map->Read8(operand8));
+            ld_reg(reg_L, memory_map->Read8(reg_HL.word));
             break;
         case 0x7E:
-            ld_reg(reg_A, memory_map->Read8(operand8));
+            ld_reg(reg_A, memory_map->Read8(reg_HL.word));
             break;
         case 0xF0:
-            ld_reg(reg_A, memory_map->Read8(0xFF00+operand8));
+            ld_reg(reg_A, memory_map->Read8(0xFF00 + GetOperand8()));
             break;
         case 0xF2:
-            ld_reg(reg_A, memory_map->Read8(0xFF00+reg_C));
+            ld_reg(reg_A, memory_map->Read8(0xFF00 + reg_C));
+            break;
+        case 0xFA:
+            ld_reg(reg_A, memory_map->Read8(GetOperand16()));
             break;
         case 0x40:
             ld_reg(reg_B, reg_B);
@@ -289,19 +303,19 @@ int Processor::ExecuteAt(u16 address)
             break;
         // LD reg16, u16
         case 0x01:
-            ld_reg(reg_BC, operand16);
+            ld_reg(reg_BC, GetOperand16());
             break;
         case 0x11:
-            ld_reg(reg_DE, operand16);
+            ld_reg(reg_DE, GetOperand16());
             break;
         case 0x21:
-            ld_reg(reg_HL, operand16);
+            ld_reg(reg_HL, GetOperand16());
             break;
         case 0x31:
-            ld_reg(reg_SP, operand16);
+            ld_reg(reg_SP, GetOperand16());
             break;
         case 0xF8:
-            ld_reg(reg_HL, reg_SP.word + static_cast<s8>(operand8));
+            ld_reg(reg_HL, reg_SP.word + static_cast<s8>(GetOperand8()));
             break;
 
         // LD (addr), u8
@@ -312,15 +326,13 @@ int Processor::ExecuteAt(u16 address)
             ld_addr(reg_DE.word, reg_A);
             break;
         case 0x22:
-            ld_addr(reg_HL.word, reg_A);
-            reg_HL.word += 1;
+            ld_addr(reg_HL.word++, reg_A);
             break;
         case 0x32:
-            ld_addr(reg_HL.word, reg_A);
-            reg_HL.word -= 1;
+            ld_addr(reg_HL.word--, reg_A);
             break;
         case 0x36:
-            ld_addr(reg_HL.word, operand8);
+            ld_addr(reg_HL.word, GetOperand8());
             break;
         case 0x70:
             ld_addr(reg_HL.word, reg_B);
@@ -344,17 +356,17 @@ int Processor::ExecuteAt(u16 address)
             ld_addr(reg_HL.word, reg_A);
             break;
         case 0xE0:
-            ld_addr(0xFF00+operand8, reg_A);
+            ld_addr(0xFF00 + GetOperand8(), reg_A);
             break;
         case 0xE2:
-            ld_addr(0xFF00+reg_C, reg_A);
+            ld_addr(0xFF00 + reg_C, reg_A);
             break;
         case 0xEA:
-            ld_addr(operand16, reg_A);
+            ld_addr(GetOperand16(), reg_A);
             break;
         // LD (addr), u16
         case 0x08:
-            ld_addr(operand16, reg_SP.word);
+            ld_addr(GetOperand16(), reg_SP.word);
             break;
 
         // INC reg8
@@ -392,6 +404,9 @@ int Processor::ExecuteAt(u16 address)
         case 0x33:
             inc(reg_SP);
             break;
+        // INC (HL)
+        case 0x34:
+            memory_map->Write8(reg_HL.word, memory_map->Read8(reg_HL.word) + 1);
 
         // DEC reg8
         case 0x05:
@@ -428,6 +443,9 @@ int Processor::ExecuteAt(u16 address)
         case 0x3B:
             dec(reg_SP);
             break;
+        // DEC (HL)
+        case 0x35:
+            memory_map->Write8(reg_HL.word, memory_map->Read8(reg_HL.word) - 1);
 
         // ADD reg8, u8
         case 0x80:
@@ -449,13 +467,13 @@ int Processor::ExecuteAt(u16 address)
             add(reg_A, reg_L);
             break;
         case 0x86:
-            add(reg_A, memory_map->Read8(operand8));
+            add(reg_A, memory_map->Read8(reg_HL.word));
             break;
         case 0x87:
             add(reg_A, reg_A);
             break;
         case 0xC6:
-            add(reg_A, operand8);
+            add(reg_A, GetOperand8());
             break;
         // ADD reg16, u16
         case 0x09:
@@ -472,7 +490,7 @@ int Processor::ExecuteAt(u16 address)
             break;
         // ADD reg16, s8
         case 0xE8:
-            add(reg_SP, static_cast<s8>(operand8));
+            add(reg_SP, static_cast<s8>(GetOperand8()));
             break;
 
         // ADC reg8, u8
@@ -495,13 +513,13 @@ int Processor::ExecuteAt(u16 address)
             adc(reg_A, reg_L);
             break;
         case 0x8E:
-            adc(reg_A, memory_map->Read8(operand8));
+            adc(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0x8F:
             adc(reg_A, reg_A);
             break;
         case 0xCE:
-            adc(reg_A, operand8);
+            adc(reg_A, GetOperand8());
             break;
 
         // SUB reg8, u8
@@ -524,13 +542,13 @@ int Processor::ExecuteAt(u16 address)
             sub(reg_A, reg_L);
             break;
         case 0x96:
-            sub(reg_A, memory_map->Read8(operand8));
+            sub(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0x97:
             sub(reg_A, reg_A);
             break;
         case 0xD6:
-            sub(reg_A, operand8);
+            sub(reg_A, GetOperand8());
             break;
 
         // SBC reg8, u8
@@ -553,13 +571,13 @@ int Processor::ExecuteAt(u16 address)
             sbc(reg_A, reg_L);
             break;
         case 0x9E:
-            sbc(reg_A, memory_map->Read8(operand8));
+            sbc(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0x9F:
             sbc(reg_A, reg_A);
             break;
         case 0xDE:
-            sbc(reg_A, operand8);
+            sbc(reg_A, GetOperand8());
             break;
 
         // AND reg8, u8
@@ -582,13 +600,13 @@ int Processor::ExecuteAt(u16 address)
             and8(reg_A, reg_L);
             break;
         case 0xA6:
-            and8(reg_A, memory_map->Read8(operand8));
+            and8(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0xA7:
             and8(reg_A, reg_A);
             break;
         case 0xE6:
-            and8(reg_A, operand8);
+            and8(reg_A, GetOperand8());
             break;
 
         // XOR reg8, u8
@@ -611,13 +629,16 @@ int Processor::ExecuteAt(u16 address)
             xor8(reg_A, reg_L);
             break;
         case 0xAE:
-            xor8(reg_A, memory_map->Read8(operand8));
+            xor8(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0xAF:
             xor8(reg_A, reg_A);
             break;
         case 0xEE:
-            xor8(reg_A, operand8);
+            xor8(reg_A, GetOperand8());
+            break;
+        case 0x2F:
+            xor8(reg_A, 0xFF);
             break;
 
         // OR reg8, u8
@@ -640,13 +661,13 @@ int Processor::ExecuteAt(u16 address)
             or8(reg_A, reg_L);
             break;
         case 0xB6:
-            or8(reg_A, memory_map->Read8(operand8));
+            or8(reg_A, memory_map->Read8(GetOperand8()));
             break;
         case 0xB7:
             or8(reg_A, reg_A);
             break;
         case 0xF6:
-            or8(reg_A, operand8);
+            or8(reg_A, GetOperand8());
             break;
 
         // RL
@@ -680,109 +701,126 @@ int Processor::ExecuteAt(u16 address)
             cp(reg_A);
             break;
         case 0xFE:
-            cp(operand8);
+            cp(GetOperand8());
             break;
 
         // JR s8
         case 0x18:
-            jr(static_cast<s8>(operand8));
+            jr(static_cast<s8>(GetOperand8()));
             break;
         case 0x20:
             if(!F_Zero) {
                 branch_taken = true;
-                jr(static_cast<s8>(operand8));
+                jr(static_cast<s8>(GetOperand8()));
                 break;
             }
+            reg_PC.word++;
             break;
         case 0x28:
             if(F_Zero) {
                 branch_taken = true;
-                jr(static_cast<s8>(operand8));
+                jr(static_cast<s8>(GetOperand8()));
                 break;
             }
+            reg_PC.word++;
             break;
         case 0x30:
             if(!F_Carry) {
                 branch_taken = true;
-                jr(static_cast<s8>(operand8));
+                jr(static_cast<s8>(GetOperand8()));
                 break;
             }
+            reg_PC.word++;
             break;
         case 0x38:
             if(F_Carry) {
                 branch_taken = true;
-                jr(static_cast<s8>(operand8));
+                jr(static_cast<s8>(GetOperand8()));
                 break;
             }
+            reg_PC.word++;
             break;
 
         // JP u16
         case 0xC3:
-            jp(operand16);
+            jp(GetOperand16());
             break;
         case 0xC2:
             if(!F_Zero) {
                 branch_taken = true;
-                jp(operand16);
+                jp(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xCA:
             if(F_Zero) {
                 branch_taken = true;
-                jp(operand16);
+                jp(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xD2:
             if(!F_Carry) {
                 branch_taken = true;
-                jp(operand16);
+                jp(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xDA:
             if(F_Carry) {
                 branch_taken = true;
-                jp(operand16);
+                jp(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xE9:
-            jp(memory_map->Read16(reg_HL.word));
+            jp(reg_HL.word);
             break;
 
         // CALL u16
         case 0xCD:
-            call(operand16);
+            call(GetOperand16());
             break;
         case 0xC4:
             if(!F_Zero) {
                 branch_taken = true;
-                call(operand16);
+                call(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xCC:
             if(F_Zero) {
                 branch_taken = true;
-                call(operand16);
+                call(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xD4:
             if(!F_Carry) {
                 branch_taken = true;
-                call(operand16);
+                call(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
             break;
         case 0xDC:
             if(F_Carry) {
                 branch_taken = true;
-                call(operand16);
+                call(GetOperand16());
                 break;
             }
+            reg_PC.word += 2;
+            break;
+
+        // RST XXh
+        case 0xEF:
+            call(0x0028);
             break;
 
         // RET
@@ -852,32 +890,22 @@ int Processor::ExecuteAt(u16 address)
             break;
 
         default:
+            logger->LogDisassembly(reg_PC.word - 1, 1);
             logger->LogError("Unknown opcode!", true);
             gameboy->Stop();
     }
 
     if(cb_opcode)
     {
-        // CB opcode
-        if(CB_OPCODE_LOOKUP[opcode].inc_pc)
-        {
-            reg_PC.word += CB_OPCODE_LOOKUP[opcode].length;
-        }
         return CB_OPCODE_LOOKUP[opcode].cycles;
     }
 
-    if(OPCODE_LOOKUP[opcode].inc_pc)
-    {
-        reg_PC.word += OPCODE_LOOKUP[opcode].length;
-    }
     return (!branch_taken)? OPCODE_LOOKUP[opcode].cycles : OPCODE_LOOKUP[opcode].cycles_branch;
 }
 
-u8 Processor::ExecuteCBOpcode(u16 address)
+u8 Processor::ExecuteCBOpcode()
 {
-    u8 opcode = memory_map->Read8(address);
-    u8 operand8 = memory_map->Read8(address + 1);
-    u16 operand16 = memory_map->Read16(address + 1);
+    u8 opcode = memory_map->Read8(reg_PC.word++);
 
     switch(opcode)
     {
@@ -885,11 +913,20 @@ u8 Processor::ExecuteCBOpcode(u16 address)
             rl(reg_C);
             break;
 
+        case 0x37:
+            swap(reg_A);
+            break;
+
         case 0x7C:
             bit(reg_H, 7);
             break;
 
+        case 0x87:
+            res(reg_A, 0b00000001);
+            break;
+
         default:
+            logger->LogDisassembly(reg_PC.word - 1, 1);
             logger->LogError("Unknown extended opcode!", true);
             gameboy->Stop();
     }

@@ -31,7 +31,7 @@ struct Opcode
     u8 cycles;
     // For conditional branches
     u8 cycles_branch;
-    // False for call and rst
+    // False for absolute jumps
     bool inc_pc;
 };
 
@@ -61,7 +61,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"DEC D", 1, 4, 0, true},
     {"LD D, " OP2, 2, 8, 0, true},
     {"RLA", 1, 4, 0, true},
-    {"JR " OP2, 2, 12, 0, true},
+    {"JR " OP2, 2, 12, 0, false},
     {"ADD HL,DE", 1, 8, 0, true},
     {"LD A,(DE)", 1, 8, 0, true},
     {"DEC DE", 1, 8, 0, true},
@@ -70,7 +70,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"LD E, " OP2, 2, 8, 0, true},
     {"RRA", 1, 4, 0, true},
 
-    {"JR NZ, " OP2, 2, 12, 0, true},
+    {"JR NZ, " OP2, 2, 12, 0, false},
     {"LD HL, " OP4, 3, 12, 0, true},
     {"LD (HL+),A", 1, 8, 0, true},
     {"INC HL", 1, 8, 0, true},
@@ -78,7 +78,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"DEC H", 1, 4, 0, true},
     {"LD H, " OP2, 2, 8, 0, true},
     {"DAA", 1, 4, 0, true},
-    {"JR Z, " OP2, 2, 12, 0, true},
+    {"JR Z, " OP2, 2, 12, 0, false},
     {"ADD HL,HL", 1, 8, 0, true},
     {"LD A,(HL+)", 1, 8, 0, true},
     {"DEC HL", 1, 8, 0, true},
@@ -87,7 +87,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"LD L, " OP2, 2, 8, 0, true},
     {"CPL", 1, 4, 0, true},
 
-    {"JR NC, " OP2, 2, 12, 0, true},
+    {"JR NC, " OP2, 2, 12, 0, false},
     {"LD SP, " OP4, 3, 12, 0, true},
     {"LD (HL-),A", 1, 8, 0, true},
     {"INC SP", 1, 8, 0, true},
@@ -95,7 +95,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"DEC (HL)", 1, 12, 0, true},
     {"LD (HL), " OP2, 2, 12, 0, true},
     {"SCF", 1, 4, 0, true},
-    {"JR C, " OP2, 2, 12, 0, true},
+    {"JR C, " OP2, 2, 12, 0, false},
     {"ADD HL,SP", 1, 8, 0, true},
     {"LD A,(HL-)", 1, 8, 0, true},
     {"DEC SP", 1, 8, 0, true},
@@ -242,15 +242,15 @@ static const Opcode OPCODE_LOOKUP[256] = {
 
     {"RET NZ", 1, 20, 0, true},
     {"POP BC", 1, 12, 0, true},
-    {"JP NZ, " OP4, 3, 16, 0, true},
-    {"JP " OP4, 3, 16, 0, true},
+    {"JP NZ, " OP4, 3, 16, 0, false},
+    {"JP " OP4, 3, 16, 0, false},
     {"CALL NZ, " OP4, 3, 24, 0, false},
     {"PUSH BC", 1, 16, 0, true},
     {"ADD A, " OP2, 2, 8, 0, true},
     {"RST 00H", 1, 16, 0, false},
     {"RET Z", 1, 20, 0, true},
     {"RET", 1, 16, 0, true},
-    {"JP Z, " OP4, 3, 16, 0, true},
+    {"JP Z, " OP4, 3, 16, 0, false},
     {"CB EXT", 1, 4, 0, true},
     {"CALL Z, " OP4, 3, 24, 0, false},
     {"CALL " OP4, 3, 24, 0, false},
@@ -259,7 +259,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
 
     {"RET NC", 1, 20, 0, true},
     {"POP DE", 1, 12, 0, true},
-    {"JP NC, " OP4, 3, 16, 0, true},
+    {"JP NC, " OP4, 3, 16, 0, false},
     {"UNDEFINED", 0, 0, 0, true},
     {"CALL NC, " OP4, 3, 24, 0, false},
     {"PUSH DE", 1, 16, 0, true},
@@ -267,7 +267,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"RST 10H", 1, 16, 0, false},
     {"RET C", 1, 20, 0, true},
     {"RETI", 1, 16, 0, true},
-    {"JP C, " OP4, 3, 16, 0, true},
+    {"JP C, " OP4, 3, 16, 0, false},
     {"UNDEFINED", 0, 0, 0, true},
     {"CALL C, " OP4, 3, 24, 0, false},
     {"UNDEFINED", 0, 0, 0, true},
@@ -283,7 +283,7 @@ static const Opcode OPCODE_LOOKUP[256] = {
     {"AND " OP2, 2, 8, 0, true},
     {"RST 20H", 1, 16, 0, false},
     {"ADD SP, " OP2, 2, 16, 0, true},
-    {"JP (HL)", 1, 4, 0, true},
+    {"JP HL", 1, 4, 0, false},
     {"LD (" OP4 "),A", 3, 16, 0, true},
     {"UNDEFINED", 0, 0, 0, true},
     {"UNDEFINED", 0, 0, 0, true},

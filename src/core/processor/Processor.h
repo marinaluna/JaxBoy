@@ -70,8 +70,12 @@ public:
 
     int Tick();
 
-    int ExecuteAt(u16 address);
-    u8 ExecuteCBOpcode(u16 address);
+    // fetches operand and increments PC
+    u8 GetOperand8();
+    u16 GetOperand16();
+
+    int ExecuteNext();
+    u8 ExecuteCBOpcode();
 
     // instructions
     // load
@@ -112,6 +116,10 @@ public:
     void rl(Reg8& reg);
     // bit
     void bit(Reg8& reg, u8 bit);
+    // swap
+    void swap(Reg8& reg);
+    // reset bit
+    void res(Reg8& reg, u8 bit);
 };
 
 }; // namespace Core

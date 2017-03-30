@@ -49,8 +49,7 @@ void Processor::inc(Reg8& reg)
 }
 void Processor::inc(Reg16& reg16)
 {
-    if(++reg16.low == 0x00)
-        ++reg16.high;
+    ++reg16.word;
 }
 
 void Processor::dec(Reg8& reg)
@@ -61,8 +60,7 @@ void Processor::dec(Reg8& reg)
 }
 void Processor::dec(Reg16& reg16)
 {
-    if(--reg16.low == 0xFF)
-        --reg16.high;
+    --reg16.word;
 
     F_Zero = reg16.word == 0x0000;
 }
@@ -99,6 +97,8 @@ void Processor::sbc(Reg8& reg, u8 value)
 void Processor::and8(Reg8& reg, u8 value)
 {
     reg &= value;
+
+    F_Zero = reg == 0x00;
 }
 
 void Processor::xor8(Reg8& reg, u8 value)
@@ -130,7 +130,7 @@ void Processor::jp(u16 addr)
 
 void Processor::call(u16 addr)
 {
-    push(reg_PC.word + 2);
+    push(reg_PC.word);
     reg_PC.word = addr;
 }
 
@@ -166,6 +166,20 @@ void Processor::rl(Reg8& reg)
 void Processor::bit(Reg8& reg, u8 bit)
 {
     F_Zero = (reg & gBitMasks[bit]) == 0;
+}
+
+// swap
+void Processor::swap(Reg8& reg)
+{
+    reg = ((reg & 0xFF) << 8) | ((reg & 0xFF00) >> 8);
+
+    F_Zero = reg == 0;
+}
+
+// reset bit
+void Processor::res(Reg8& reg, u8 bit)
+{
+    reg &= ~bit;
 }
 
 }; // namespace Core
