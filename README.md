@@ -5,30 +5,37 @@ A WIP GameBoy emulator written in C++
 
 ## Description
 
-JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. Currently it can only play through the bootrom, and has very basic ROM loading support. It does not play any games yet. It is WIP and is very inaccurate and incomplete.
+JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. The emulator is in the early stages and has very basic ROM loading support. It loads few games and has no controller support. It is WIP and is very inaccurate and incomplete.
 
 ## Status
 
-JaxBoy is currently not able to emulate any commercial games. It can currently boot Tetris to the loading copyright screen(this is the only ROM tested). Running the emulator requires that you have access to a GameBoy boot ROM image. It will play through the boot ROM pretty accurately without any graphical glitches.
+JaxBoy is currently capable of emulating a few commercial games with varying levels of success. There are glitches and games are not playable without controller support.
+Running the emulator requires that you have access to a GameBoy boot ROM image. It will play through the boot screen without any issues.
 
-The emulator currently runs too fast as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better too fast than too slow, eh?).
+The emulator currently runs at varying speeds as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better it run too fast than too slow, eh?).
 
 ## Screenshots
 
-![bootrom](screenshots/bootrom.png)
-![tetris](screenshots/tetris_launch.png)
+![tetris](screenshots/tetris.png)
+![tetris2](screenshots/tetris2.png)
+![tennis](screenshots/tennis.png)
 
 ## Known game compatibility
 
 Below is a compatibility table for JaxBoy.
-Not all roms have been tested.
+Only roms that have been tested are listed.
 
 | Game | Compatibility | Notes |
 | --- | --- | --- |
-| Tetris | :large_blue_circle::white_circle::white_circle::white_circle: | Boots to the copyright screen. |
-| Super Mario Land | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
-| Donkey Kong | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
-| Pokemon Blue | :white_circle::white_circle::white_circle::white_circle: | Does not boot. |
+| Alleyway                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Baseball                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Castlevania Adventure                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Donkey Kong                               | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Legend of Zelda, The: Link's Awakening    | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Pokemon Blue                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Tennis                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. Cannot play without controls. |
+| Tetris                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. Demo desyncs when placing blocks. |
 
 ## Building and running
 
@@ -41,6 +48,10 @@ The only dependency for building is [MiniFB](https://github.com/emoon/minifb). B
 Then, to build simply run:
 ```
 make run
+```
+To run:
+```
+./jaxboy <path_to_rom> <path_to_bootrom> <options>
 ```
 
 ## License

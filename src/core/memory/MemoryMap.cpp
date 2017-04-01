@@ -72,7 +72,7 @@ MemoryRegion* MemoryMap::GetRegion(u16 address, u16& pagestart)
 
 void MemoryMap::Write8(u16 address, u8 data)
 {
-    if(address >= 0xFF00 && address < 0xFF80)
+    if((address >= 0xFF00 && address < 0xFF80) || address == 0xFFFF)
     {
         gameboy->IORegisterWrite(address, data);
     }
@@ -100,7 +100,7 @@ void MemoryMap::Write16(u16 address, u16 data)
 
 u8 MemoryMap::Read8(u16 address)
 {
-    if(address >= 0xFF00 && address < 0xFF80)
+    if((address >= 0xFF00 && address < 0xFF80) || address == 0xFFFF)
     {
         return gameboy->IORegisterRead(address);
     }
@@ -119,7 +119,7 @@ u16 MemoryMap::Read16(u16 address)
     MemoryRegion* region = GetRegion(address, pagestart);
     if(region != nullptr)
     {
-        return (region->at(address - pagestart)) | (region->at(address - pagestart + 1) << 8); 
+        return (region->at(address - pagestart)) | (region->at(address - pagestart + 1) << 8);
     }
     return 0xFF;
 }

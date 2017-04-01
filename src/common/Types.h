@@ -40,3 +40,12 @@ union Reg16
         Reg8 high;
     };
 };
+
+// Display Modes
+enum
+{
+    DISPLAY_HBLANK,
+    DISPLAY_VBLANK,
+    DISPLAY_OAMACCESS,
+    DISPLAY_UPDATE
+};

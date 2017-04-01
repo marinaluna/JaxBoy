@@ -14,10 +14,9 @@
 
 #include "Processor.h"
 
+#include "../../common/Globals.h"
 #include "../memory/MemoryMap.h"
 
-#include "../../common/Globals.h"
-#include "../../common/Types.h"
 
 
 namespace Core {
@@ -76,7 +75,7 @@ void Processor::add(Reg16& reg, u16 value)
 }
 void Processor::add(Reg16& reg, s8 value)
 {
-    reg.word = static_cast<u16>(reg.word) + value;
+    reg.word = reg.word + value;
 }
 void Processor::adc(Reg8& reg, u8 value)
 {
@@ -154,6 +153,13 @@ void Processor::pop(Reg16& reg16)
 
 // CB opcodes
 // rotate
+void Processor::rlc(Reg8& reg)
+{
+    bool newCarry = (reg & 0b10000000) != 0;
+    reg <<= 1;
+    reg |= (newCarry? 1 : 0);
+    F_Carry = newCarry;
+}
 void Processor::rl(Reg8& reg)
 {
     bool newCarry = (reg & 0b10000000) != 0;
@@ -161,11 +167,31 @@ void Processor::rl(Reg8& reg)
     reg |= (F_Carry? 1 : 0);
     F_Carry = newCarry;
 }
+void Processor::rrc(Reg8& reg)
+{
+    bool newCarry = (reg & 0b00000001) != 0;
+    reg >>= 1;
+    reg |= (newCarry? 0b10000000 : 0);
+    F_Carry = newCarry;
+}
+
+// shift
+void Processor::sla(Reg8& reg)
+{
+    F_Carry = (reg & 0b10000000) != 0;
+    reg <<= 1;
+}
+void Processor::srl(Reg8& reg)
+{
+    bool newCarry = (reg & 0b0000001) != 0;
+    reg >>= 1;
+    F_Carry = newCarry;
+}
 
 // bit
-void Processor::bit(Reg8& reg, u8 bit)
+void Processor::bit(u8 byte, u8 bit)
 {
-    F_Zero = (reg & gBitMasks[bit]) == 0;
+    F_Zero = (byte & gBitMasks[bit]) == 0;
 }
 
 // swap
@@ -179,7 +205,17 @@ void Processor::swap(Reg8& reg)
 // reset bit
 void Processor::res(Reg8& reg, u8 bit)
 {
-    reg &= ~bit;
+    reg &= ~gBitMasks[bit];
+}
+void Processor::res_addr(u16 addr, u8 bit)
+{
+    memory_map->Write8(addr, memory_map->Read8(addr) & ~gBitMasks[bit]);
+}
+
+// set bit
+void Processor::set(Reg8& reg, u8 bit)
+{
+    reg |= gBitMasks[bit];
 }
 
 }; // namespace Core

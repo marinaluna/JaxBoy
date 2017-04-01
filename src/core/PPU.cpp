@@ -25,7 +25,7 @@
 
 namespace Core {
 
-PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger)
+PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger)
 :
     gameboy (gameboy),
     lcd_width (width),
@@ -38,10 +38,11 @@ PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& me
 
     // initialize buffers
     framebuffer = std::vector<Color>(width * height);
-    tileset = std::vector<u8>(128 * 8*8);
+    tileset = std::vector<u8>(384 * 8*8);
+    // Start in DISPLAY_UPDATE
+    STAT |= DISPLAY_UPDATE;
     // Setup a blank palette
     BGPalette[0] = BGPalette[1] = BGPalette[2] = BGPalette[3] = gColors[0x00];
-    Mode = DisplayMode::Update;
 
     // Update the window once to create it
     mfb_update(framebuffer.data());
@@ -58,9 +59,9 @@ int PPU::Tick(int cycles)
     if((LCDC & 0b10000000) != 0)
     {
         frameCycles += cycles;
-        switch(Mode)
+        switch(STAT & 0x03)
         {
-            case DisplayMode::HBlank:
+            case DISPLAY_HBLANK:
                 // TODO: Accurate cycles?
                 if(frameCycles > 207)
                 {
@@ -69,23 +70,25 @@ int PPU::Tick(int cycles)
                     if(++Line == 144)
                     {
                         // At the last line; enter V-Blank
-                        Mode = DisplayMode::VBlank;
+                        STAT = (STAT & ~0x03) | DISPLAY_VBLANK;
+                        // request V-Blank interrupt
+                        memory_map->Write8(0xFF0F, memory_map->Read8(0xFF0F) | 0b00000001);
                     }
                     else
                     {
                         // Proceed to the next line
-                        Mode = DisplayMode::OAMAccess;
+                        STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
                     }
                 }
                 break;
-            case DisplayMode::VBlank:
+            case DISPLAY_VBLANK:
                 // Have we completed a scanline?
                 if((floor(frameCycles / 465) + 144) > Line)
                 {
                     if(++Line > 153)
                     {
                         frameCycles %= 4560;
-                        Mode = DisplayMode::OAMAccess;
+                        STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
                         Line = 0;
                         // Redraw the frame after V-Blank
                         DrawFrame();
@@ -93,18 +96,18 @@ int PPU::Tick(int cycles)
                     }
                 }
                 break;
-            case DisplayMode::OAMAccess:
+            case DISPLAY_OAMACCESS:
                 if(frameCycles > 83)
                 {
                     frameCycles %= 83;
-                    Mode = DisplayMode::Update;
+                    STAT = (STAT & ~0x03) | DISPLAY_UPDATE;
                 }
                 break;
-            case DisplayMode::Update:
+            case DISPLAY_UPDATE:
                 if(frameCycles > 175)
                 {
                     frameCycles %= 175;
-                    Mode = DisplayMode::HBlank;
+                    STAT = (STAT & ~0x03) | DISPLAY_HBLANK;
                     UpdateTileset();
                 }
                 break;
@@ -117,7 +120,7 @@ int PPU::Tick(int cycles)
         Line = 0;
     }
 
-    return 0;
+    return return_code;
 }
 
 void PPU::DrawFrame()
@@ -192,7 +195,7 @@ void PPU::UpdateTileset()
 {
     // fetch each tile in the tileset from VRAM
     // and decode their 2-bit colors
-    for(int i = 0; i < 128; i++)
+    for(int i = 0; i < 384; i++)
     {
         DecodeTile(i);
     }

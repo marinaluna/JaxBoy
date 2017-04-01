@@ -23,33 +23,26 @@
 #include <iomanip>
 
 
-namespace Debugger {
+namespace Debug {
 
 Logger::Logger(std::shared_ptr<Core::MemoryMap>& memory_map)
 :
     memory_map (memory_map)
 {}
 
-void Logger::LogMessage(const std::string& msg)
+void Logger::Log(LogType type, const std::string& msg)
 {
-    std::cout << msg << std::endl;
-}
-
-void Logger::LogError(const std::string& error_msg, bool fatal)
-{
-    // Set the color to red
-    std::cout << "\033[31m\n";
-    if(fatal)
+    switch(type)
     {
-        std::cout << "FATAL: ";
+        case LogType::WARN:
+            std::cout << "\033[31mWARN: " << msg << "\033[0m\n";
+            break;
+        case LogType::FATAL:
+            std::cout << "\033[31mERROR: " << msg << "\033[0m\n";
+            break;
+        default:
+            std::cout << msg << "\n";
     }
-    else
-    {
-        std::cout << "WARN: ";
-    }
-    std::cout << error_msg;
-    // and back to white again
-    std::cout << "\033[0m\n";
 }
 
 void Logger::LogRegisters(const Core::Processor& processor)
@@ -119,25 +112,40 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
     while(instructions-- > 0)
     {
         // print the address
-        std::cout << "\033[33m" << std::setw(4) << std::setfill('0') << std::hex << address << "h: \033[0m";
 
         opcode = memory_map->Read8(address++);
-        if(OPCODE_LOOKUP[opcode].length == 2)
+        // Get the proper lookup table for opcodes,
+        // the 1337 way
+        const Opcode* lookup_table = OPCODE_LOOKUP;
+        u8 operand_adder = 0;
+        if(opcode == 0xCB)
         {
-            // 2 byte instruction
-            operand8 = memory_map->Read8(address++);
-            printf(OPCODE_LOOKUP[opcode].name.c_str(), operand8);
+            opcode = memory_map->Read8(address++);
+            lookup_table = CB_OPCODE_LOOKUP;
+            // if it's a CB extension, add 1 to length
+            // to get the length + the 0xCB
+            operand_adder = 1;
         }
-        else if(OPCODE_LOOKUP[opcode].length == 3)
+
+        std::cout << "\033[33m" << std::setw(4) << std::setfill('0') << std::hex << address - 1 << "h: \033[0m";
+
+        if(lookup_table[opcode].length == (2 + operand_adder))
         {
-            // 3 byte instruction
-            operand16 = memory_map->Read16(address++);
-            printf(OPCODE_LOOKUP[opcode].name.c_str(), operand16);
+            // 1 byte operand
+            operand8 = memory_map->Read8(address++);
+            printf(lookup_table[opcode].name.c_str(), operand8);
+        }
+        else if(lookup_table[opcode].length == (3 + operand_adder))
+        {
+            // 2 byte operand
+            operand16 = memory_map->Read16(address);
+            address += 2;
+            printf(lookup_table[opcode].name.c_str(), operand16);
         }
         else
         {
-            // 1 byte instruction
-            printf("%s", OPCODE_LOOKUP[opcode].name.c_str());
+            // no operand
+            printf("%s", lookup_table[opcode].name.c_str());
         }
 
         std::cout << std::endl;
@@ -145,4 +153,4 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
 }
 
 
-}; // namespace Debugger
+}; // namespace Debug

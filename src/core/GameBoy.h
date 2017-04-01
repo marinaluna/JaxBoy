@@ -20,9 +20,9 @@
 #include <vector>
 
 
-namespace Debugger {
+namespace Debug {
     class Logger;
-}; // namespace Debugger
+}; // namespace Debug
 
 namespace Core {
 
@@ -58,7 +58,7 @@ private:
     // System memory map
     std::shared_ptr<MemoryMap> memory_map;
     // Logger
-    std::shared_ptr<Debugger::Logger> logger;
+    std::shared_ptr<Debug::Logger> logger;
 
     bool InBootROM = false;
     bool Stopped = false;

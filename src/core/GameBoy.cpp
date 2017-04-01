@@ -20,10 +20,12 @@
 
 #include "../common/Globals.h"
 
-#include "../debugger/Logger.h"
+#include "../debug/Logger.h"
 
 #include <memory>
 #include <vector>
+
+using namespace Debug;
 
 
 namespace Core {
@@ -34,7 +36,7 @@ GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const st
 {
     memory_map = std::make_shared<MemoryMap>(this);
 
-    logger = std::make_shared<Debugger::Logger>(memory_map);
+    logger = std::make_shared<Logger>(memory_map);
     processor = std::unique_ptr<Processor> (new Processor(this, memory_map, logger));
     ppu = std::unique_ptr<PPU> (new PPU(this, 160+2, 144+25, memory_map, logger));
 
@@ -57,7 +59,7 @@ void GameBoy::Run()
         // if Escape was pressed or the Window was closed
         if(ppu->Tick(cycles) == -1)
         {
-            Stop();
+           Stop();
         }
     }
 }
@@ -71,8 +73,15 @@ void GameBoy::IORegisterWrite(u16 address, u8 data)
 {
     switch(address)
     {
+        case 0xFF0F:
+            // interrupt request flags
+            processor->InterruptsRequested = data;
+            break;
         case 0xFF40:
             ppu->LCDC = data;
+            break;
+        case 0xFF41:
+            ppu->STAT = data;
             break;
         case 0xFF42:
             ppu->ScrollY = data;
@@ -98,6 +107,10 @@ void GameBoy::IORegisterWrite(u16 address, u8 data)
             memory_map->WriteBytes(0x0000, game_rom->bytes, 0x0000, 0x100);
             InBootROM = false;
             break;
+        case 0xFFFF:
+            // interrupt enable flags
+            processor->InterruptsEnabled = data;
+            break;
     }
 }
 
@@ -105,8 +118,12 @@ u8 GameBoy::IORegisterRead(u16 address)
 {
     switch(address)
     {
+        case 0xFF0F:
+            return processor->InterruptsRequested;
         case 0xFF40:
             return ppu->LCDC;
+        case 0xFF41:
+            return ppu->STAT;
         case 0xFF42:
             return ppu->ScrollY;
         case 0xFF43:
@@ -115,6 +132,8 @@ u8 GameBoy::IORegisterRead(u16 address)
             return ppu->Line;
         case 0xFF45:
             return ppu->LineCompare;
+        case 0xFFFF:
+            return processor->InterruptsEnabled;
     }
     // GameBoy system bus returns 0xFF by default
     return 0xFF;

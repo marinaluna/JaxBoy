@@ -19,9 +19,9 @@
 #include <memory>
 
 
-namespace Debugger {
+namespace Debug {
     class Logger;
-}; // namespace Debugger
+}; // namespace Debug
 
 namespace Core {
 
@@ -32,20 +32,11 @@ class PPU
 {
     friend class GameBoy;
 
-    enum class DisplayMode : int
-    {
-        HBlank,
-        VBlank,
-        OAMAccess,
-        Update
-    };
-
     // IO Registers
     // LCD controller
     u8 LCDC;
-    // Enabled interrupts
-    u8 InterruptFlags;
-    DisplayMode Mode;
+    // LCD Status
+    u8 STAT;
     u8 ScrollY, ScrollX;
     u8 Line;
     // Acts as a breakpoint
@@ -71,10 +62,10 @@ class PPU
     GameBoy* gameboy;
     std::shared_ptr<MemoryMap> memory_map;
 
-    std::shared_ptr<Debugger::Logger> logger;
+    std::shared_ptr<Debug::Logger> logger;
 
 public:
-    PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger);
+    PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
     ~PPU();
 
     int Tick(int cycles);

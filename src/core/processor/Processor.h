@@ -19,9 +19,9 @@
 #include <memory>
 
 
-namespace Debugger {
+namespace Debug {
     class Logger;
-}; // namespace Debugger
+}; // namespace Debug
 
 namespace Core {
 
@@ -31,7 +31,7 @@ class MemoryMap;
 class Processor
 {
     friend class GameBoy;
-    friend class Debugger::Logger;
+    friend class Debug::Logger;
 
     // 16-bit program counter and stack pointer
     Reg16 reg_PC;
@@ -55,18 +55,20 @@ class Processor
     bool F_Subtract;
     bool F_HalfCarry;
     bool F_Carry;
-
-    // IME
-    bool InterruptsEnabled = false;
+    // Interrupt registers
+    bool MasterInterruptsEnabled;
+    u8 InterruptsEnabled;
+    u8 InterruptsRequested;
+    int TickInterrupts();
 
     GameBoy* gameboy;
     std::shared_ptr<MemoryMap> memory_map;
 
-    std::shared_ptr<Debugger::Logger> logger;
+    std::shared_ptr<Debug::Logger> logger;
 
 public:
     
-    Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debugger::Logger>& logger);
+    Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
 
     int Tick();
 
@@ -113,13 +115,21 @@ public:
 
     // CB opcodes
     // rotate
+    void rlc(Reg8& reg);
     void rl(Reg8& reg);
+    void rrc(Reg8& reg);
+    // shift
+    void sla(Reg8& reg);
+    void srl(Reg8& reg);
     // bit
-    void bit(Reg8& reg, u8 bit);
+    void bit(u8 byte, u8 bit);
     // swap
     void swap(Reg8& reg);
     // reset bit
     void res(Reg8& reg, u8 bit);
+    void res_addr(u16 addr, u8 bit);
+    // set bit
+    void set(Reg8& reg, u8 bit);
 };
 
 }; // namespace Core

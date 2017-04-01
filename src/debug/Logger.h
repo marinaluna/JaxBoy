@@ -24,7 +24,14 @@ namespace Core {
     class Processor;
 }; // namespace Core
 
-namespace Debugger {
+namespace Debug {
+
+enum LogType
+{
+    MSG,
+    WARN,
+    FATAL
+};
 
 class Logger
 {
@@ -33,8 +40,7 @@ class Logger
 public:
     Logger(std::shared_ptr<Core::MemoryMap>& memory_map);
 
-    void LogMessage(const std::string& msg);
-    void LogError(const std::string& error_msg, bool fatal);
+    void Log(LogType type, const std::string& msg);
 
     void LogRegisters(const Core::Processor& processor);
     void LogIORegisters();
@@ -43,4 +49,4 @@ public:
     void LogDisassembly(u16 address, u16 bytes);
 };
 
-}; // namespace Debugger
+}; // namespace Debug

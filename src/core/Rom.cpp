@@ -14,16 +14,18 @@
 
 #include "Rom.h"
 
-#include "../debugger/Logger.h"
+#include "../debug/Logger.h"
 
 #include <string>
 #include <vector>
 #include <algorithm>
 
+using namespace Debug;
+
 
 namespace Core {
 
-Rom::Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debugger::Logger>& logger)
+Rom::Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debug::Logger>& logger)
 :
     logger (logger)
 {
@@ -31,7 +33,7 @@ Rom::Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debugger::Logger>& 
 
     // copy the rom name (in newer carts the end of this is used by manufacturer code)
     std::copy(bytes.begin() + 0x134, bytes.begin() + 0x143, header.Name);
-    logger->LogMessage("Loaded rom: " + std::string(header.Name));
+    logger->Log(LogType::MSG, "Loaded rom: " + std::string(header.Name));
 
     // copy the new manufacturer code
     std::copy(bytes.begin() + 0x13F, bytes.begin() + 0x143, header.Manufacturer);
@@ -57,6 +59,10 @@ Rom::Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debugger::Logger>& 
     //     12 - MBC3 + RAM                      FE - HuC3
     //     13 - MBC3 + RAM + BATTERY            FF - HuC1 + RAM + BATTERY
     header.CartType = bytes.at(0x147);
+    if(header.CartType != 0x00)
+    {
+        logger->Log(LogType::WARN, "Unsupported cart type!");
+    }
     
     header.RomSize = bytes.at(0x148);
     header.RamSize = bytes.at(0x149);
