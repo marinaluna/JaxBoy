@@ -569,6 +569,9 @@ int Processor::ExecuteNext()
         // RRC reg8
         case 0x0F:
             rrc(reg_A); break;
+        // RR reg8
+        case 0x1F:
+            rr(reg_A); break;
 
         // DAA
         case 0x27:

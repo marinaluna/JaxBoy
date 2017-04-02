@@ -15,7 +15,6 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -26,8 +25,6 @@ using s16 = int16_t;
 using s32 = int32_t;
 
 using Color = u32;
-
-using MemoryRegion = std::vector<u8>;
 
 using Reg8 = u8;
 union Reg16

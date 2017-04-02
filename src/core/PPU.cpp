@@ -38,7 +38,8 @@ PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& me
 
     // initialize buffers
     framebuffer = std::vector<Color>(width * height);
-    tileset = std::vector<u8>(384 * 8*8);
+    BGTileset = std::vector<Graphics::Tile>(256);
+    OBJTileset = std::vector<Graphics::Tile>(256);
     // Start in DISPLAY_UPDATE
     STAT |= DISPLAY_UPDATE;
     // Setup a blank palette
@@ -108,7 +109,7 @@ int PPU::Tick(int cycles)
                 {
                     frameCycles %= 175;
                     STAT = (STAT & ~0x03) | DISPLAY_HBLANK;
-                    UpdateTileset();
+                    DecodeTiles();
                 }
                 break;
         }
@@ -140,7 +141,7 @@ void PPU::DrawFrame()
                 for(int px = 0; px < 8; px++)
                 {
                     tileID = memory_map->Read8(0x9800 + (((y + scYtile) * 32) + x));
-                    framebuffer[(((y * 8) + py + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[tileset[(tileID * 64) + ((py + scYpixel) * 8) + px]];
+                    framebuffer[(((y * 8) + py + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[BGTileset[tileID].GetPixel(px, py+scYpixel)];
                 }
             }
             // If there's a scroll,
@@ -155,7 +156,7 @@ void PPU::DrawFrame()
                     for(int px = 0; px < 8; px++)
                     {
                         // Somehow this works
-                        framebuffer[(((y * 8) + tophalf + ny + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[tileset[(tileID * 64) + (ny * 8) + px]];
+                        framebuffer[(((y * 8) + tophalf + ny + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[BGTileset[tileID].GetPixel(px, ny)];
                     }
                 }
             }
@@ -163,41 +164,46 @@ void PPU::DrawFrame()
     }
 }
 
-void PPU::DecodeTile(u8 tileID)
-{
-    // each tile is 16 bytes
-    u8* buffer = new u8[16];
-    for(int i = 0; i < 16; i++)
-    {
-        buffer[i] = memory_map->Read8(0x8000 + (16 * tileID) + i);
-    }
-
-    // iterate through the rows
-    for(int y = 0; y < 16; y += 2)
-    {
-        const int row = y / 2;
-        const u8 upperByte = buffer[y];
-        const u8 lowerByte = buffer[y + 1];
-        // iterate through the columns
-        for(int x = 0; x < 8; x++)
-        {
-            // the top row determines each color's top bit
-            tileset[(tileID * 64) + (row * 8) + x]  = ((upperByte & (0b10000000 >> x)) != 0)? 0b10 : 0b00;
-            // the bottom row determines each color's bottom bit
-            tileset[(tileID * 64) + (row * 8) + x] |= ((lowerByte & (0b10000000) >> x) != 0)? 0b01 : 0b00;
-        }
-    }
-
-    delete[] buffer;
-}
-
-void PPU::UpdateTileset()
+void PPU::DecodeTiles()
 {
     // fetch each tile in the tileset from VRAM
     // and decode their 2-bit colors
-    for(int i = 0; i < 384; i++)
+    const int BG_SIZE = 16;
+    const int OBJ_SIZE = 16;
+
+    // Background Tileset
+    for(int bg = 0; bg < 256; bg++)
     {
-        DecodeTile(i);
+        // if LCDC bit 4 == 0,
+        // BG tiles 00-7F start at 0x9000
+        // and 80-FF start at 0x8800
+        // Otherwise, BG tiles align with
+        // OBJ tiles at 0x8000
+        u16 base = 0x8000;
+        u8 rawTile = bg;
+        if((LCDC & 0x10) == 0)
+        {
+            if(bg >= 128)
+            {
+                base = 0x8800;
+                // start fetching from 0x8800,
+                // not 0x8800 + 128 tiles
+                rawTile -= 128;
+            }
+            else
+                base = 0x9000;
+        }
+
+        u8 buffer[BG_SIZE];
+        memory_map->CopyBytes(buffer, base + (rawTile * BG_SIZE), BG_SIZE);
+        BGTileset.at(bg).Decode(buffer);
+    }
+    // Sprite tileset
+    for(int obj = 0; obj < 256; obj++)
+    {
+        u8 buffer[OBJ_SIZE];
+        memory_map->CopyBytes(buffer, 0x8000 + (obj * OBJ_SIZE), OBJ_SIZE);
+        OBJTileset.at(obj).Decode(buffer);
     }
 }
 

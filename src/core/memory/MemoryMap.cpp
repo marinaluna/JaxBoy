@@ -17,6 +17,7 @@
 #include "../GameBoy.h"
 
 #include <vector>
+#include <cstring>
 
 
 namespace Core {
@@ -25,48 +26,29 @@ MemoryMap::MemoryMap(GameBoy* gameboy)
 :
     gameboy(gameboy),
 
-    RegionROM (0x8000),
-    RegionVRAM (0x2000),
-    RegionSaveRAM (0x2000),
-    RegionWRAM (0x2000),
-    RegionOAM (0x00A0),
-    RegionZeroPage (0x007F)
+    RegionROM      (0x8000, 0x0000),
+    RegionVRAM     (0x2000, 0x8000),
+    RegionSaveRAM  (0x2000, 0xA000),
+    RegionWRAM     (0x2000, 0xC000),
+    RegionOAM      (0x00A0, 0xFE00),
+    RegionZeroPage (0x007F, 0xFF80)
 {}
 
-MemoryRegion* MemoryMap::GetRegion(u16 address, u16& pagestart)
+MemoryPage* MemoryMap::GetPage(u16 address)
 {
     if(address >= 0x0000 && address <= 0x7FFF)
-    {
-        pagestart = 0x0000;
         return &RegionROM;
-    }
     if(address >= 0x8000 && address <= 0x9FFF)
-    {
-        pagestart = 0x8000;
         return &RegionVRAM;
-    }
     if(address >= 0xA000 && address <= 0xBFFF)
-    {
-        pagestart = 0xA000;
         return &RegionSaveRAM;
-    }
     if(address >= 0xC000 && address <= 0xDFFF)
-    {
-        pagestart = 0xC000;
         return &RegionWRAM;
-    }
     if(address >= 0xFE00 && address <= 0xFE9F)
-    {
-        pagestart = 0xFE00;
         return &RegionOAM;
-    }
     if(address >= 0xFF80 && address <= 0xFFFE)
-    {
-        pagestart = 0xFF80;
         return &RegionZeroPage;
-    }
-
-    // If no region can be found
+    // If no page can be found
     return nullptr;
 }
 
@@ -78,23 +60,21 @@ void MemoryMap::Write8(u16 address, u8 data)
     }
     else
     {
-        u16 pagestart;
-        MemoryRegion* region = GetRegion(address, pagestart);
+        MemoryPage* region = GetPage(address);
         if(region != nullptr)
         {
-            region->at(address - pagestart) = data;
+            region->bytes.at(address - region->base) = data;
         }
     }
 }
 
 void MemoryMap::Write16(u16 address, u16 data)
 {
-    u16 pagestart;
-    MemoryRegion* region = GetRegion(address, pagestart);
+    MemoryPage* region = GetPage(address);
     if(region != nullptr)
     {
-        region->at(address - pagestart) = data & 0xFF;
-        region->at(address - pagestart + 1) = (data & 0xFF00) >> 8;
+        region->bytes.at(address - region->base) = data & 0xFF;
+        region->bytes.at(address - region->base + 1) = (data & 0xFF00) >> 8;
     }
 }
 
@@ -104,22 +84,20 @@ u8 MemoryMap::Read8(u16 address)
     {
         return gameboy->IORegisterRead(address);
     }
-    u16 pagestart;
-    MemoryRegion* region = GetRegion(address, pagestart);
+    MemoryPage* region = GetPage(address);
     if(region != nullptr)
     {
-        return region->at(address - pagestart);
+        return region->bytes.at(address - region->base);
     }
     return 0xFF;
 }
 
 u16 MemoryMap::Read16(u16 address)
 {
-    u16 pagestart;
-    MemoryRegion* region = GetRegion(address, pagestart);
+    MemoryPage* region = GetPage(address);
     if(region != nullptr)
     {
-        return (region->at(address - pagestart)) | (region->at(address - pagestart + 1) << 8);
+        return (region->bytes.at(address - region->base)) | (region->bytes.at(address - region->base + 1) << 8);
     }
     return 0xFF;
 }
@@ -128,12 +106,20 @@ void MemoryMap::WriteBytes(u16 address, const std::vector<u8>& data, u16 startOf
 {
     for(int i = 0; i < bytes; i++)
     {
-        u16 pagestart;
-        MemoryRegion* region = GetRegion(address, pagestart);
+        MemoryPage* region = GetPage(address);
         if(region != nullptr)
         {
-            region->at(address - pagestart + i) = data.at(i + startOffset);
+            region->bytes.at(address - region->base + i) = data.at(i + startOffset);
         }
+    }
+}
+
+void MemoryMap::CopyBytes(u8* destination, u16 address, u16 bytes)
+{
+    MemoryPage* region = GetPage(address);
+    if(region != nullptr)
+    {
+        std::memcpy(destination, region->bytes.data() + (address - region->base), bytes);
     }
 }
 

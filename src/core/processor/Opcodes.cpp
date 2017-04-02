@@ -14,9 +14,9 @@
 
 #include "Processor.h"
 
+#include "../../common/Types.h"
 #include "../../common/Globals.h"
 #include "../memory/MemoryMap.h"
-
 
 
 namespace Core {
@@ -172,6 +172,13 @@ void Processor::rrc(Reg8& reg)
     bool newCarry = (reg & 0b00000001) != 0;
     reg >>= 1;
     reg |= (newCarry? 0b10000000 : 0);
+    F_Carry = newCarry;
+}
+void Processor::rr(Reg8& reg)
+{
+    bool newCarry = (reg & 0b00000001) != 0;
+    reg >>= 1;
+    reg |= (F_Carry? 0b10000000 : 0);
     F_Carry = newCarry;
 }
 

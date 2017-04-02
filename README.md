@@ -10,15 +10,17 @@ JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written i
 ## Status
 
 JaxBoy is currently capable of emulating a few commercial games with varying levels of success. There are glitches and games are not playable without controller support.
-Running the emulator requires that you have access to a GameBoy boot ROM image. It will play through the boot screen without any issues.
 
-The emulator currently runs at varying speeds as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better it run too fast than too slow, eh?).
+Running the emulator requires that you have access to a GameBoy boot ROM image.
+
+The emulator currently runs at varying speeds (usually too fast) as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better it run too fast than too slow, eh?).
 
 ## Screenshots
 
 ![tetris](screenshots/tetris.png)
 ![tetris2](screenshots/tetris2.png)
 ![tennis](screenshots/tennis.png)
+![drmario](screenshots/drmario.png)
 
 ## Known game compatibility
 
@@ -31,6 +33,7 @@ Only roms that have been tested are listed.
 | Baseball                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Castlevania Adventure                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Donkey Kong                               | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Dr. Mario                                 | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, but then hangs. |
 | Legend of Zelda, The: Link's Awakening    | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Pokemon Blue                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |

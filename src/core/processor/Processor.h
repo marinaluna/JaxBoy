@@ -118,6 +118,7 @@ public:
     void rlc(Reg8& reg);
     void rl(Reg8& reg);
     void rrc(Reg8& reg);
+    void rr(Reg8& reg);
     // shift
     void sla(Reg8& reg);
     void srl(Reg8& reg);

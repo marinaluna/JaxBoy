@@ -16,6 +16,15 @@
 
 #include "../../common/Types.h"
 
+#include <vector>
+
+
+struct MemoryPage
+{
+    std::vector<u8> bytes;
+    u16 base;
+    MemoryPage(u16 size, u16 base): bytes(size), base(base){}
+};
 
 namespace Core {
 
@@ -26,19 +35,19 @@ class MemoryMap
     GameBoy* gameboy;
 
     // 0x0000-0x7FFF
-    MemoryRegion RegionROM;
+    MemoryPage RegionROM;
     // 0x8000-0x9FFF
-    MemoryRegion RegionVRAM;
+    MemoryPage RegionVRAM;
     // 0xA000-0xBFFF
-    MemoryRegion RegionSaveRAM;
+    MemoryPage RegionSaveRAM;
     // 0xC000-0xDFFF
-    MemoryRegion RegionWRAM;
+    MemoryPage RegionWRAM;
     // 0xFE00-0xFE9F
-    MemoryRegion RegionOAM;
+    MemoryPage RegionOAM;
     // 0xFF80-0xFFFE
-    MemoryRegion RegionZeroPage;
+    MemoryPage RegionZeroPage;
 
-    MemoryRegion* GetRegion(u16 address, u16& pagestart);
+    MemoryPage* GetPage(u16 address);
 
 public:
 
@@ -50,6 +59,7 @@ public:
     u16 Read16(u16 address);
 
     void WriteBytes(u16 address, const std::vector<u8>& src, u16 startOffset, u16 bytes);
+    void CopyBytes(u8* destination, u16 address, u16 bytes);
 };
 
 }; // namespace Core

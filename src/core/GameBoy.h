@@ -42,10 +42,12 @@ public:
     GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const std::vector<u8>& bootrom);
 
     void Run();
-    void Stop();
+    void Stop() { Stopped = true; }
 
     void IORegisterWrite(u16 address, u8 value);
     u8 IORegisterRead(u16 address);
+
+    bool IsInBootROM() { return InBootROM; }
 
 private:
     // Options configuration

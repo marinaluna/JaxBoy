@@ -32,7 +32,7 @@ namespace Core {
 
 GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const std::vector<u8>& bootrom)
 :
-   _Options (options)
+    _Options (options)
 {
     memory_map = std::make_shared<MemoryMap>(this);
 
@@ -59,14 +59,9 @@ void GameBoy::Run()
         // if Escape was pressed or the Window was closed
         if(ppu->Tick(cycles) == -1)
         {
-           Stop();
+            Stop();
         }
     }
-}
-
-void GameBoy::Stop()
-{
-    Stopped = true;
 }
 
 void GameBoy::IORegisterWrite(u16 address, u8 data)
