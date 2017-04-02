@@ -40,10 +40,13 @@ PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& me
     framebuffer = std::vector<Color>(width * height);
     BGTileset = std::vector<Graphics::Tile>(256);
     OBJTileset = std::vector<Graphics::Tile>(256);
+    Sprites = std::vector<Graphics::Sprite>(40);
     // Start in DISPLAY_UPDATE
     STAT |= DISPLAY_UPDATE;
     // Setup a blank palette
     BGPalette[0] = BGPalette[1] = BGPalette[2] = BGPalette[3] = gColors[0x00];
+    OBJ0Palette[0] = OBJ0Palette[1] = OBJ0Palette[2] = OBJ0Palette[3] = gColors[0x00];
+    OBJ1Palette[0] = OBJ1Palette[1] = OBJ1Palette[2] = OBJ1Palette[3] = gColors[0x00];
 
     // Update the window once to create it
     mfb_update(framebuffer.data());
@@ -100,6 +103,7 @@ int PPU::Tick(int cycles)
             case DISPLAY_OAMACCESS:
                 if(frameCycles > 83)
                 {
+                    PopulateSprites();
                     frameCycles %= 83;
                     STAT = (STAT & ~0x03) | DISPLAY_UPDATE;
                 }
@@ -161,6 +165,38 @@ void PPU::DrawFrame()
                 }
             }
         }
+    }
+
+    DrawSprites();
+}
+
+void PPU::DrawSprites()
+{
+    for(Graphics::Sprite& sprite : Sprites)
+    {
+        // TODO: This is ALL wrong, but works for basic sprites
+        int y = sprite._y - 15;
+        int x = sprite._x - 7;
+        for(int py = 0; py < 8; py++)
+        {
+            for(int px = 0; px < 8; px++)
+            {
+                const Color* palette = (sprite.palette == 0)? OBJ0Palette : OBJ1Palette;
+                framebuffer[((y+py + 24) * lcd_width) + x+px + 1] = palette[OBJTileset[sprite.id].GetPixel(px, py)];
+            }
+        }
+    }
+}
+
+void PPU::PopulateSprites()
+{
+    const int OAM_SIZE = 4;
+    const int OAM_COUNT = 40;
+    for(int i = 0; i < OAM_COUNT; i++)
+    {
+        u8 buffer[4];
+        memory_map->CopyBytes(buffer, 0xFE00 + (i * OAM_SIZE), OAM_SIZE);
+        Sprites.at(i).Decode(buffer);
     }
 }
 

@@ -91,11 +91,26 @@ void GameBoy::IORegisterWrite(u16 address, u8 data)
         case 0xFF45:
             ppu->LineCompare = data;
             break;
+        case 0xFF46:
+            processor->StartDMATransfer(data);
+            break;
         case 0xFF47:
             ppu->BGPalette[0] = gColors[(data & 0b00000011) >> 0];
             ppu->BGPalette[1] = gColors[(data & 0b00001100) >> 2];
             ppu->BGPalette[2] = gColors[(data & 0b00110000) >> 4];
             ppu->BGPalette[3] = gColors[(data & 0b11000000) >> 6];
+            break;
+        case 0xFF48:
+            ppu->OBJ0Palette[0] = gColors[(data & 0b00000011) >> 0];
+            ppu->OBJ0Palette[1] = gColors[(data & 0b00001100) >> 2];
+            ppu->OBJ0Palette[2] = gColors[(data & 0b00110000) >> 4];
+            ppu->OBJ0Palette[3] = gColors[(data & 0b11000000) >> 6];
+            break;
+        case 0xFF49:
+            ppu->OBJ1Palette[0] = gColors[(data & 0b00000011) >> 0];
+            ppu->OBJ1Palette[1] = gColors[(data & 0b00001100) >> 2];
+            ppu->OBJ1Palette[2] = gColors[(data & 0b00110000) >> 4];
+            ppu->OBJ1Palette[3] = gColors[(data & 0b11000000) >> 6];
             break;
         case 0xFF50:
             // replace ROM interrupt vectors

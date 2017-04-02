@@ -55,6 +55,28 @@ namespace Graphics {
             return static_cast<u8>((rows[y] & (0xC000 >> x)) >> (14 - x));
         }
     };
+
+    struct Sprite
+    {
+        u8 _y;
+        u8 _x;
+        u8 id;
+        u8 priority;
+        bool flipY;
+        bool flipX;
+        u8 palette;
+
+        inline void Decode(const u8 src[4])
+        {
+            _y = src[0];
+            _x = src[1];
+            id = src[2];
+            priority = (src[3] & 0b10000000) >> 7;
+            flipY = (src[3] & 0b01000000) != 0;
+            flipX = (src[3] & 0b00100000) != 0;
+            palette = (src[3] & 0b00010000) >> 4;
+        }
+    };
 }; // namespace Graphics
 
 namespace Core {
@@ -77,8 +99,8 @@ class PPU
     u8 LineCompare;
     // Palettes
     Color BGPalette[4];
+    Color OBJ0Palette[4];
     Color OBJ1Palette[4];
-    Color OBJ2Palette[4];
     // Position of the Window, X is minus 7
     u8 WindowY, WindowX;
 
@@ -87,6 +109,9 @@ class PPU
     // Spritesheets
     std::vector<Graphics::Tile> BGTileset;
     std::vector<Graphics::Tile> OBJTileset;
+    // Sprites to draw
+    std::vector<Graphics::Sprite> Sprites;
+
     // cycle counter per frame
     int frameCycles;
 
@@ -106,6 +131,8 @@ public:
     int Tick(int cycles);
 
     void DrawFrame();
+    void DrawSprites();
+    void PopulateSprites();
     void DecodeTiles();
 };
 

@@ -72,6 +72,8 @@ public:
 
     int Tick();
 
+    void StartDMATransfer(u8 addrH);
+
     // fetches operand and increments PC
     u8 GetOperand8();
     u16 GetOperand16();

@@ -117,6 +117,21 @@ int Processor::TickInterrupts()
     return 0;
 }
 
+void Processor::StartDMATransfer(u8 addrH)
+{
+    // The caller passes in the high byte
+    // of the address to start writing from
+    // This allows for 0x100 increments
+    // Data is transfered in 40*4 bytes
+    // chunks to OAM
+    u16 address = addrH << 8;
+    const int totalBytes = 40*4;
+    for(int i = 0; i < totalBytes; i++)
+        memory_map->Write8(0xFE00+i, memory_map->Read8(address+i));
+
+    // TODO: cycle accuracy
+}
+
 // fetches operand and increments PC
 // TODO: inline these
 u8 Processor::GetOperand8()
