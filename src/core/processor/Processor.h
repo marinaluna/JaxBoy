@@ -104,6 +104,8 @@ public:
     void and8(Reg8& reg, u8 value);
     void xor8(Reg8& reg, u8 value);
     void or8(Reg8& reg, u8 value);
+    // daa
+    void daa();
     // compare
     void cp(u8 value);
     // jump

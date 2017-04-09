@@ -220,11 +220,8 @@ void PPU::DrawScanlineSprites()
                 for(int xScaled = 0; xScaled < lcd_scale; xScaled++)
                 {
                     // Scale sprites
-                    // I have no idea why I need to add 1 to these
-                    // TODO: can't add 1 to y or else the next scanline draws over it;
-                    // because of this y is off by one.
-                    int drawY = ((Line/*+1*/ * lcd_scale) + yScaled + 23) * buffer_width;
-                    int drawX = ((x-8 +1)*lcd_scale) + (px*lcd_scale) + xScaled + 1;
+                    int drawY = ((Line * lcd_scale) + yScaled + 23) * buffer_width;
+                    int drawX = ((x-8) * lcd_scale) + (px*lcd_scale) + xScaled + 1;
                     framebuffer[drawY + drawX] = palette[color];
                 }
             }
