@@ -590,8 +590,7 @@ int Processor::ExecuteNext()
 
         // DAA
         case 0x27:
-            daa();
-            break;
+            daa(); break;
 
         // CP u8
         case 0xB8:

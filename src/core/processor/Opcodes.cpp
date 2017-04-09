@@ -44,7 +44,11 @@ void Processor::ld_addr(u16 addr, u16 value)
 // inc/dec
 void Processor::inc(Reg8& reg)
 {
+    F_Subtract = false;
+    F_HalfCarry = (reg & 0x0F) + 1 > 0x0F;
     ++reg;
+
+    F_Zero = reg == 0x00;
 }
 void Processor::inc(Reg16& reg16)
 {
@@ -53,6 +57,8 @@ void Processor::inc(Reg16& reg16)
 
 void Processor::dec(Reg8& reg)
 {
+    F_Subtract = true;
+    F_HalfCarry = (reg & 0x0F) < 1;
     --reg;
 
     F_Zero = reg == 0x00;
@@ -60,8 +66,6 @@ void Processor::dec(Reg8& reg)
 void Processor::dec(Reg16& reg16)
 {
     --reg16.word;
-
-    F_Zero = reg16.word == 0x0000;
 }
 
 // add
@@ -77,19 +81,23 @@ void Processor::add(Reg8& reg, u8 value)
 void Processor::add(Reg16& reg, u16 value)
 {
     F_Subtract = false;
+    F_HalfCarry = ((reg.word & 0x0F00) + (value & 0x0F00)) > 0x0F00;
+    F_Carry = (reg.word + value) > 0xFFFF;
     reg.word += value;
 }
 void Processor::add(Reg16& reg, s8 value)
 {
     F_Subtract = false;
+    F_Zero = false;
+    // TODO: HalfCarry and Carry
     reg.word = reg.word + value;
 }
 void Processor::adc(Reg8& reg, u8 value)
 {
     u8 adder = F_Carry? 1 : 0;
     F_Subtract = false;
-    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F) + adder) > 0x10;
-    F_Carry = (reg + value + adder > 0x100);
+    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F) + adder) > 0x0F;
+    F_Carry = (reg + value + adder > 0xFF);
     reg += value + adder;
 
     F_Zero = reg == 0x00;
@@ -121,17 +129,30 @@ void Processor::and8(Reg8& reg, u8 value)
 {
     reg &= value;
 
+    F_Subtract = false;
+    F_HalfCarry = true;
+    F_Carry = false;
     F_Zero = reg == 0x00;
 }
 
 void Processor::xor8(Reg8& reg, u8 value)
 {
     reg ^= value;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Carry = false;
+    F_Zero = reg == 0x00;
 }
 
 void Processor::or8(Reg8& reg, u8 value)
 {
     reg |= value;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Carry = false;
+    F_Zero = reg == 0x00;
 }
 
 // daa
@@ -139,10 +160,12 @@ void Processor::daa()
 {
     if(F_Subtract)
     {
-        if(F_Carry) {
+        if(F_Carry)
+        {
             reg_A -= 0x60;
         }
-        if(F_HalfCarry) {
+        if(F_HalfCarry)
+        {
             reg_A -= 0x06;
         }
     }
@@ -158,13 +181,16 @@ void Processor::daa()
             reg_A += 0x06;
         }
     }
-    F_Zero = reg_A != 0x00;
+    F_Zero = reg_A == 0x00;
     F_HalfCarry = false;
 }
 
 // compare
 void Processor::cp(u8 value)
 {
+    F_Subtract = true;
+    F_HalfCarry = (reg_A & 0x0F) < (value & 0x0F);
+    F_Carry = reg_A < value;
     F_Zero = (reg_A == value);
 }
 
