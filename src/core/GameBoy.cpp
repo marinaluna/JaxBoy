@@ -38,7 +38,7 @@ GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const st
 
     logger = std::make_shared<Logger>(memory_map);
     processor = std::unique_ptr<Processor> (new Processor(this, memory_map, logger));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160+2, 144+25, memory_map, logger));
+    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_map, logger));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom, logger));
 

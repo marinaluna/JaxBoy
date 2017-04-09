@@ -110,13 +110,17 @@ class PPU
     std::vector<Graphics::Tile> BGTileset;
     std::vector<Graphics::Tile> OBJTileset;
     // Sprites to draw
-    std::vector<Graphics::Sprite> Sprites;
+    std::vector<Graphics::Sprite> ScanlineSprites;
 
     // cycle counter per frame
     int frameCycles;
 
     int lcd_width;
     int lcd_height;
+    int lcd_scale;
+    // width/height + border
+    int buffer_width;
+    int buffer_height;
 
     // system pointers
     GameBoy* gameboy;
@@ -125,14 +129,14 @@ class PPU
     std::shared_ptr<Debug::Logger> logger;
 
 public:
-    PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
+    PPU(GameBoy* gameboy, int width, int height, int scale, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
     ~PPU();
 
     int Tick(int cycles);
 
-    void DrawFrame();
-    void DrawSprites();
-    void PopulateSprites();
+    void DrawScanline();
+    void DrawScanlineSprites();
+    void FetchScanlineSprites();
     void DecodeTiles();
 };
 

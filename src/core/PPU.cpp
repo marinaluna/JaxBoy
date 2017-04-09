@@ -25,25 +25,27 @@
 
 namespace Core {
 
-PPU::PPU(GameBoy* gameboy, int width, int height, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger)
+PPU::PPU(GameBoy* gameboy, int width, int height, int scale, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger)
 :
     gameboy (gameboy),
     lcd_width (width),
     lcd_height (height),
+    lcd_scale (scale),
+    buffer_width((width*scale)+2),
+    buffer_height((height*scale)+24),
     memory_map (memory_map),
     logger (logger)
 {
     // initialize the LCD
-    mfb_open(gAppName, width, height);
+    mfb_open(gAppName, buffer_width, buffer_height);
 
     // initialize buffers
-    framebuffer = std::vector<Color>(width * height);
+    framebuffer = std::vector<Color>(buffer_width * buffer_height);
     BGTileset = std::vector<Graphics::Tile>(256);
     OBJTileset = std::vector<Graphics::Tile>(256);
-    Sprites = std::vector<Graphics::Sprite>(40);
-    // Start in DISPLAY_UPDATE
-    STAT |= DISPLAY_UPDATE;
-    // Setup a blank palette
+    // Start in DISPLAY_VBLANK
+    STAT |= DISPLAY_VBLANK;
+    // Setup blank palettes
     BGPalette[0] = BGPalette[1] = BGPalette[2] = BGPalette[3] = gColors[0x00];
     OBJ0Palette[0] = OBJ0Palette[1] = OBJ0Palette[2] = OBJ0Palette[3] = gColors[0x00];
     OBJ1Palette[0] = OBJ1Palette[1] = OBJ1Palette[2] = OBJ1Palette[3] = gColors[0x00];
@@ -69,6 +71,8 @@ int PPU::Tick(int cycles)
                 // TODO: Accurate cycles?
                 if(frameCycles > 207)
                 {
+                    // Draw this scanline
+                    DrawScanline();
                     // Carry leftover cycles into next mode
                     frameCycles %= 207;
                     if(++Line == 144)
@@ -76,7 +80,7 @@ int PPU::Tick(int cycles)
                         // At the last line; enter V-Blank
                         STAT = (STAT & ~0x03) | DISPLAY_VBLANK;
                         // request V-Blank interrupt
-                        memory_map->Write8(0xFF0F, memory_map->Read8(0xFF0F) | 0b00000001);
+                        memory_map->Write8(0xFF0F, memory_map->Read8(0xFF0F) | 0x01);
                     }
                     else
                     {
@@ -95,7 +99,6 @@ int PPU::Tick(int cycles)
                         STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
                         Line = 0;
                         // Redraw the frame after V-Blank
-                        DrawFrame();
                         return_code = mfb_update(framebuffer.data());
                     }
                 }
@@ -103,7 +106,7 @@ int PPU::Tick(int cycles)
             case DISPLAY_OAMACCESS:
                 if(frameCycles > 83)
                 {
-                    PopulateSprites();
+                    FetchScanlineSprites();
                     frameCycles %= 83;
                     STAT = (STAT & ~0x03) | DISPLAY_UPDATE;
                 }
@@ -128,75 +131,138 @@ int PPU::Tick(int cycles)
     return return_code;
 }
 
-void PPU::DrawFrame()
+void PPU::DrawScanline()
 {
-    // TODO: rewrite this
-    for(int y = 0; y < 18; y++)
+    for(int x = 0; x < lcd_width; x++)
     {
-        for(int x = 0; x < 20; x++)
-        {
-            u8 scYtile = floor(ScrollY / 8);
-            u8 scYpixel = (ScrollY % 8);
-            u8 tophalf = (8 - scYpixel);
-            u8 tileID;
+        int y = Line;
 
-            for(int py = 0; py < tophalf; py++)
+        // Tile and pixel to draw
+        u8 tileY = y / 8;
+        u8 tileX = x / 8;
+        u8 pixelY = y % 8;
+        u8 pixelX = x % 8;
+        // Scroll offsets
+        u8 tileYoff = ScrollY / 8;
+        u8 tileXoff = ScrollX / 8;
+        u8 pixelYoff = ScrollY % 8;
+        u8 pixelXoff = ScrollX % 8;
+        // boundary between the scroll tiles
+        u8 upperHalf = (8 - pixelYoff);
+        u8 leftHalf = (8 - pixelXoff);
+        // tile to take from the BG map
+        u8 fetchY = tileY+tileYoff;
+        u8 fetchX = tileX+tileXoff;
+        if(pixelY >= upperHalf)
+        {
+            // start drawing from the top
+            // of the next tile down
+            fetchY++;
+            pixelY -= upperHalf;
+            pixelYoff = 0;
+        }
+        if(pixelX >= leftHalf)
+        {
+            fetchX++;
+            pixelX -= leftHalf;
+            pixelXoff = 0;
+        }
+        // wrap around
+        if(fetchY >= 32)
+            fetchY %= 32;
+        if(fetchX >= 32)
+            fetchX %= 32;
+        // fetch the tile to draw
+        u8 tileID = memory_map->Read8(0x9800 + (fetchY * 32) + fetchX);
+        // Draw the pixel * Scale
+        for(int yScaled = 0; yScaled < lcd_scale; yScaled++)
+        {
+            for(int xScaled = 0; xScaled < lcd_scale; xScaled++)
             {
-                for(int px = 0; px < 8; px++)
-                {
-                    tileID = memory_map->Read8(0x9800 + (((y + scYtile) * 32) + x));
-                    framebuffer[(((y * 8) + py + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[BGTileset[tileID].GetPixel(px, py+scYpixel)];
-                }
-            }
-            // If there's a scroll,
-            // complete the bottom half of the tile using
-            // the image of the next tile down
-            if(tophalf != 0)
-            {
-                // fetch the next tile down
-                tileID = memory_map->Read8(0x9800 + (((y + scYtile + 1) * 32) + x));
-                for(int ny = 0; ny < scYpixel; ny++)
-                {
-                    for(int px = 0; px < 8; px++)
-                    {
-                        // Somehow this works
-                        framebuffer[(((y * 8) + tophalf + ny + 24) * lcd_width) + ((x * 8) + px + 1)] = BGPalette[BGTileset[tileID].GetPixel(px, ny)];
-                    }
-                }
+                // Scale the tile
+                int drawY = ((Line * lcd_scale) + yScaled + 23) * buffer_width;
+                int drawX = (x * lcd_scale) + xScaled + 1;
+                framebuffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
             }
         }
     }
 
-    DrawSprites();
+    DrawScanlineSprites();
 }
 
-void PPU::DrawSprites()
+void PPU::DrawScanlineSprites()
 {
-    for(Graphics::Sprite& sprite : Sprites)
+    // TODO: change this based on hardware setting
+    const int SPRITE_HEIGHT = 8;
+
+    for(auto it = ScanlineSprites.begin(); it != ScanlineSprites.end(); it++)
     {
-        // TODO: This is ALL wrong, but works for basic sprites
-        int y = sprite._y - 15;
-        int x = sprite._x - 7;
-        for(int py = 0; py < 8; py++)
+        Graphics::Sprite& sprite = *it;
+        // offset by 16 to align with Sprite y
+        int adjScanline = Line + 16;
+        int y = sprite._y;
+        int x = sprite._x;
+        const Color* palette = (sprite.palette == 0)? OBJ0Palette : OBJ1Palette;
+        for(int px = 0; px < 8; px++)
         {
-            for(int px = 0; px < 8; px++)
+            // don't draw the x pixels if they are offscreen
+            if(x+px < 8 || x+px >= 168)
+                continue;
+            // flip sprites
+            int oamX = (sprite.flipX)? (7 - px) : px;
+            int oamY = (sprite.flipY)? ((SPRITE_HEIGHT - 1) - (adjScanline - y)) : (adjScanline - y);
+            u8 color = OBJTileset[sprite.id].GetPixel(oamX, oamY);
+            // 00 is transparent for sprites: use the color of the background instead
+            if(color == 0x00)
+                continue;
+            for(int yScaled = 0; yScaled < lcd_scale; yScaled++)
             {
-                const Color* palette = (sprite.palette == 0)? OBJ0Palette : OBJ1Palette;
-                framebuffer[((y+py + 24) * lcd_width) + x+px + 1] = palette[OBJTileset[sprite.id].GetPixel(px, py)];
+                for(int xScaled = 0; xScaled < lcd_scale; xScaled++)
+                {
+                    // Scale sprites
+                    // I have no idea why I need to add 1 to these
+                    // TODO: can't add 1 to y or else the next scanline draws over it;
+                    // because of this y is off by one.
+                    int drawY = ((Line/*+1*/ * lcd_scale) + yScaled + 23) * buffer_width;
+                    int drawX = ((x-8 +1)*lcd_scale) + (px*lcd_scale) + xScaled + 1;
+                    framebuffer[drawY + drawX] = palette[color];
+                }
             }
         }
     }
+    ScanlineSprites.clear();
 }
 
-void PPU::PopulateSprites()
+void PPU::FetchScanlineSprites()
 {
     const int OAM_SIZE = 4;
     const int OAM_COUNT = 40;
+    // TODO: change this based on hardware setting
+    const int SPRITE_HEIGHT = 8;
+
+    int spriteCounter = 0;
     for(int i = 0; i < OAM_COUNT; i++)
     {
+        Graphics::Sprite sprite;
         u8 buffer[4];
         memory_map->CopyBytes(buffer, 0xFE00 + (i * OAM_SIZE), OAM_SIZE);
-        Sprites.at(i).Decode(buffer);
+        sprite.Decode(buffer);
+        // offset by 16 to align with Sprite y
+        u8 adjScanline = Line + 16;
+        u8 y = sprite._y;
+        u8 x = sprite._x;
+        // if the sprite is offscreen
+        // sprites start at (8, 16) so you can scroll them in
+        if((y == 0 || y >= 160) || (x == 0 || x >= 168))
+            continue;
+        // if the sprite is not within range of this scanline
+        if(adjScanline < y || (adjScanline - y) >= SPRITE_HEIGHT)
+            continue;
+        // only 10 sprites per scanline
+        if(++spriteCounter > 10)
+            return;
+
+        ScanlineSprites.push_back(sprite);
     }
 }
 
