@@ -15,8 +15,8 @@
 #include "Logger.h"
 
 #include "../core/processor/Processor.h"
+#include "../core/memory/MemoryBus.h"
 #include "../core/processor/Opcodes.h"
-#include "../core/memory/MemoryMap.h"
 
 #include <cstdio>
 #include <iostream>
@@ -25,9 +25,9 @@
 
 namespace Debug {
 
-Logger::Logger(std::shared_ptr<Core::MemoryMap>& memory_map)
+Logger::Logger(std::shared_ptr<Memory::MemoryBus>& memory_bus)
 :
-    memory_map (memory_map)
+    memory_bus (memory_bus)
 {}
 
 void Logger::Log(LogType type, const std::string& msg)
@@ -66,12 +66,12 @@ void Logger::LogRegisters(const Core::Processor& processor)
 
 void Logger::LogIORegisters()
 {
-    std::cout << "LCDC: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF40)) << "h\n";
-    std::cout << "STAT: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF41)) << "h\n";
-    std::cout << "SCY: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF42)) << "h\n";
-    std::cout << "SCX: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF43)) << "h\n";
-    std::cout << "LY: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF44)) << "h\n";
-    std::cout << "LYC: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(0xFF45)) << "h\n";
+    std::cout << "LCDC: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF40)) << "h\n";
+    std::cout << "STAT: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF41)) << "h\n";
+    std::cout << "SCY: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF42)) << "h\n";
+    std::cout << "SCX: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF43)) << "h\n";
+    std::cout << "LY: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF44)) << "h\n";
+    std::cout << "LYC: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF45)) << "h\n";
     // TODO: the rest of them
     std::cout << std::endl;
 }
@@ -93,7 +93,7 @@ void Logger::LogMemory(u16 address, u16 bytes)
             }
             std::cout << "\033[33m" << std::setw(4) << std::setfill('0') << std::hex << address + i << "h: \033[0m";
         }
-        std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_map->Read8(address + i)) << " ";
+        std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(address + i)) << " ";
     }
     std::cout << std::endl;
 }
@@ -113,14 +113,14 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
     {
         // print the address
 
-        opcode = memory_map->Read8(address++);
+        opcode = memory_bus->Read8(address++);
         // Get the proper lookup table for opcodes,
         // the 1337 way
         const Opcode* lookup_table = OPCODE_LOOKUP;
         u8 operand_adder = 0;
         if(opcode == 0xCB)
         {
-            opcode = memory_map->Read8(address++);
+            opcode = memory_bus->Read8(address++);
             lookup_table = CB_OPCODE_LOOKUP;
             // if it's a CB extension, add 1 to length
             // to get the length + the 0xCB
@@ -132,13 +132,13 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
         if(lookup_table[opcode].length == (2 + operand_adder))
         {
             // 1 byte operand
-            operand8 = memory_map->Read8(address++);
+            operand8 = memory_bus->Read8(address++);
             printf(lookup_table[opcode].name.c_str(), operand8);
         }
         else if(lookup_table[opcode].length == (3 + operand_adder))
         {
             // 2 byte operand
-            operand16 = memory_map->Read16(address);
+            operand16 = memory_bus->Read16(address);
             address += 2;
             printf(lookup_table[opcode].name.c_str(), operand16);
         }

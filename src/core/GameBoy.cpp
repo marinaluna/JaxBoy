@@ -15,38 +15,37 @@
 #include "GameBoy.h"
 #include "PPU.h"
 #include "Rom.h"
-#include "memory/MemoryMap.h"
 #include "processor/Processor.h"
+#include "memory/MemoryBus.h"
 
 #include "../common/Globals.h"
 
 #include "../debug/Logger.h"
 
-#include <memory>
-#include <vector>
-
-using namespace Debug;
+#include <string>
 
 
 namespace Core {
 
-GameBoy::GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const std::vector<u8>& bootrom)
+GameBoy::GameBoy(GameBoy::Options& options,
+                 const std::vector<u8>& rom,
+                 const std::vector<u8>& bootrom)
 :
     _Options (options)
 {
-    memory_map = std::make_shared<MemoryMap>(this);
+    memory_bus = std::make_shared<Memory::MemoryBus>(this);
 
-    logger = std::make_shared<Logger>(memory_map);
-    processor = std::unique_ptr<Processor> (new Processor(this, memory_map, logger));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_map, logger));
+    logger = std::make_shared<Debug::Logger>(memory_bus);
+    processor = std::unique_ptr<Processor> (new Processor(this, memory_bus, logger));
+    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_bus, logger));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom, logger));
 
     // load boot ROM at 0x0000
-    memory_map->WriteBytes(0x0000, bootrom, 0x0000, 0x100);
+    memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x100);
     // load ROM at 0x0000 + 0x100 bytes
     // the rest is loaded after boot ROM finishes
-    memory_map->WriteBytes(0x0100, rom, 0x0100, 0x8000 - 0x100);
+    memory_bus->WriteBytes(rom.data() + 0x100, 0x0100, 0x8000 - 0x100);
 
     InBootROM = true;
 }
@@ -64,89 +63,10 @@ void GameBoy::Run()
     }
 }
 
-void GameBoy::IORegisterWrite(u16 address, u8 data)
+void GameBoy::SystemError(const std::string& error_msg)
 {
-    switch(address)
-    {
-        case 0xFF0F:
-            // interrupt request flags
-            processor->InterruptsRequested = data;
-            break;
-        case 0xFF40:
-            ppu->LCDC = data;
-            break;
-        case 0xFF41:
-            ppu->STAT = data;
-            break;
-        case 0xFF42:
-            ppu->ScrollY = data;
-            break;
-        case 0xFF43:
-            ppu->ScrollX = data;
-            break;
-        case 0xFF44:
-            // Writing to this resets it
-            ppu->Line = 0;
-            break;
-        case 0xFF45:
-            ppu->LineCompare = data;
-            break;
-        case 0xFF46:
-            processor->StartDMATransfer(data);
-            break;
-        case 0xFF47:
-            ppu->BGPalette[0] = gColors[(data & 0b00000011) >> 0];
-            ppu->BGPalette[1] = gColors[(data & 0b00001100) >> 2];
-            ppu->BGPalette[2] = gColors[(data & 0b00110000) >> 4];
-            ppu->BGPalette[3] = gColors[(data & 0b11000000) >> 6];
-            break;
-        case 0xFF48:
-            ppu->OBJ0Palette[0] = gColors[(data & 0b00000011) >> 0];
-            ppu->OBJ0Palette[1] = gColors[(data & 0b00001100) >> 2];
-            ppu->OBJ0Palette[2] = gColors[(data & 0b00110000) >> 4];
-            ppu->OBJ0Palette[3] = gColors[(data & 0b11000000) >> 6];
-            break;
-        case 0xFF49:
-            ppu->OBJ1Palette[0] = gColors[(data & 0b00000011) >> 0];
-            ppu->OBJ1Palette[1] = gColors[(data & 0b00001100) >> 2];
-            ppu->OBJ1Palette[2] = gColors[(data & 0b00110000) >> 4];
-            ppu->OBJ1Palette[3] = gColors[(data & 0b11000000) >> 6];
-            break;
-        case 0xFF50:
-            // replace ROM interrupt vectors
-            memory_map->WriteBytes(0x0000, game_rom->bytes, 0x0000, 0x100);
-            InBootROM = false;
-            break;
-        case 0xFFFF:
-            // interrupt enable flags
-            processor->InterruptsEnabled = data;
-            break;
-    }
-}
-
-u8 GameBoy::IORegisterRead(u16 address)
-{
-    switch(address)
-    {
-        case 0xFF0F:
-            return processor->InterruptsRequested;
-        case 0xFF40:
-            return ppu->LCDC;
-        case 0xFF41:
-            return ppu->STAT;
-        case 0xFF42:
-            return ppu->ScrollY;
-        case 0xFF43:
-            return ppu->ScrollX;
-        case 0xFF44:
-            return ppu->Line;
-        case 0xFF45:
-            return ppu->LineCompare;
-        case 0xFFFF:
-            return processor->InterruptsEnabled;
-    }
-    // GameBoy system bus returns 0xFF by default
-    return 0xFF;
+    logger->Log(Debug::LogType::FATAL, error_msg);
+    Stop();
 }
 
 }; // namespace Core

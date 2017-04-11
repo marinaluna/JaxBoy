@@ -24,6 +24,11 @@ namespace Debug {
     class Logger;
 }; // namespace Debug
 
+namespace Memory {
+    class MemoryBus;
+    class IORegisterMemoryController;
+}; // namespace Memory
+
 namespace Graphics {
     struct Tile
     {
@@ -31,7 +36,7 @@ namespace Graphics {
         // 16 bits per row for 8 rows
         u16 rows[8];
 
-        inline void Decode(const u8 src[16])
+        inline void Decode(const u8* src)
         {
             // interleave the bits
             for(int row = 0; row < 8; row++)
@@ -66,7 +71,7 @@ namespace Graphics {
         bool flipX;
         u8 palette;
 
-        inline void Decode(const u8 src[4])
+        inline void Decode(const u8* src)
         {
             _y = src[0];
             _x = src[1];
@@ -80,14 +85,11 @@ namespace Graphics {
 }; // namespace Graphics
 
 namespace Core {
-
 class GameBoy;
-class MemoryMap;
 
 class PPU
 {
-    friend class GameBoy;
-
+    friend class Memory::IORegisterMemoryController;
     // IO Registers
     // LCD controller
     u8 LCDC;
@@ -124,12 +126,14 @@ class PPU
 
     // system pointers
     GameBoy* gameboy;
-    std::shared_ptr<MemoryMap> memory_map;
+    std::shared_ptr<Memory::MemoryBus> memory_bus;
 
     std::shared_ptr<Debug::Logger> logger;
 
 public:
-    PPU(GameBoy* gameboy, int width, int height, int scale, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
+    PPU(GameBoy* gameboy, int width, int height, int scale,
+        std::shared_ptr<Memory::MemoryBus>& memory_bus,
+        std::shared_ptr<Debug::Logger>& logger);
     ~PPU();
 
     int Tick(int cycles);
@@ -138,6 +142,8 @@ public:
     void DrawScanlineSprites();
     void FetchScanlineSprites();
     void DecodeTiles();
+
+    void SystemError(const std::string& error_msg);
 };
 
 }; // namespace Core

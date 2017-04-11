@@ -13,19 +13,20 @@
 // limitations under the License.
 
 #include "PPU.h"
-#include "memory/MemoryMap.h"
+#include "memory/MemoryBus.h"
 
 #include "../common/Globals.h"
 
 #include "../external/MiniFB/MiniFB.h"
 
-#include <memory>
 #include <cmath>
 
 
 namespace Core {
 
-PPU::PPU(GameBoy* gameboy, int width, int height, int scale, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger)
+PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
+         std::shared_ptr<Memory::MemoryBus>& memory_bus,
+         std::shared_ptr<Debug::Logger>& logger)
 :
     gameboy (gameboy),
     lcd_width (width),
@@ -33,7 +34,7 @@ PPU::PPU(GameBoy* gameboy, int width, int height, int scale, std::shared_ptr<Mem
     lcd_scale (scale),
     buffer_width((width*scale)+2),
     buffer_height((height*scale)+24),
-    memory_map (memory_map),
+    memory_bus (memory_bus),
     logger (logger)
 {
     // initialize the LCD
@@ -80,7 +81,7 @@ int PPU::Tick(int cycles)
                         // At the last line; enter V-Blank
                         STAT = (STAT & ~0x03) | DISPLAY_VBLANK;
                         // request V-Blank interrupt
-                        memory_map->Write8(0xFF0F, memory_map->Read8(0xFF0F) | 0x01);
+                        memory_bus->Write8(0xFF0F, memory_bus->Read8(0xFF0F) | 0x01);
                     }
                     else
                     {
@@ -173,7 +174,7 @@ void PPU::DrawScanline()
         if(fetchX >= 32)
             fetchX %= 32;
         // fetch the tile to draw
-        u8 tileID = memory_map->Read8(0x9800 + (fetchY * 32) + fetchX);
+        u8 tileID = memory_bus->Read8(0x9800 + (fetchY * 32) + fetchX);
         // Draw the pixel * Scale
         for(int yScaled = 0; yScaled < lcd_scale; yScaled++)
         {
@@ -242,7 +243,7 @@ void PPU::FetchScanlineSprites()
     {
         Graphics::Sprite sprite;
         u8 buffer[4];
-        memory_map->CopyBytes(buffer, 0xFE00 + (i * OAM_SIZE), OAM_SIZE);
+        memory_bus->ReadBytes(buffer, 0xFE00 + (i * OAM_SIZE), OAM_SIZE);
         sprite.Decode(buffer);
         // offset by 16 to align with Sprite y
         u8 adjScanline = Line + 16;
@@ -294,14 +295,14 @@ void PPU::DecodeTiles()
         }
 
         u8 buffer[BG_SIZE];
-        memory_map->CopyBytes(buffer, base + (rawTile * BG_SIZE), BG_SIZE);
+        memory_bus->ReadBytes(buffer, base + (rawTile * BG_SIZE), BG_SIZE);
         BGTileset.at(bg).Decode(buffer);
     }
     // Sprite tileset
     for(int obj = 0; obj < 256; obj++)
     {
         u8 buffer[OBJ_SIZE];
-        memory_map->CopyBytes(buffer, 0x8000 + (obj * OBJ_SIZE), OBJ_SIZE);
+        memory_bus->ReadBytes(buffer, 0x8000 + (obj * OBJ_SIZE), OBJ_SIZE);
         OBJTileset.at(obj).Decode(buffer);
     }
 }

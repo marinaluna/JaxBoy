@@ -23,14 +23,17 @@ namespace Debug {
     class Logger;
 }; // namespace Debug
 
-namespace Core {
+namespace Memory {
+    class MemoryBus;
+    class IORegisterMemoryController;
+}; // namespace Memory
 
+namespace Core {
 class GameBoy;
-class MemoryMap;
 
 class Processor
 {
-    friend class GameBoy;
+    friend class Memory::IORegisterMemoryController;
     friend class Debug::Logger;
 
     // 16-bit program counter and stack pointer
@@ -62,13 +65,14 @@ class Processor
     int TickInterrupts();
 
     GameBoy* gameboy;
-    std::shared_ptr<MemoryMap> memory_map;
+    std::shared_ptr<Memory::MemoryBus> memory_bus;
 
     std::shared_ptr<Debug::Logger> logger;
 
 public:
-    
-    Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger);
+    Processor(GameBoy* gameboy,
+              std::shared_ptr<Memory::MemoryBus>& memory_bus,
+              std::shared_ptr<Debug::Logger>& logger);
 
     int Tick();
 
@@ -119,10 +123,10 @@ public:
 
     // CB opcodes
     // rotate
-    void rlc(Reg8& reg);
-    void rl(Reg8& reg);
-    void rrc(Reg8& reg);
-    void rr(Reg8& reg);
+    void rlc(Reg8& reg, bool modifyFlags);
+    void rl(Reg8& reg, bool modifyFlags);
+    void rrc(Reg8& reg, bool modifyFlags);
+    void rr(Reg8& reg, bool modifyFlags);
     // shift
     void sla(Reg8& reg);
     void srl(Reg8& reg);

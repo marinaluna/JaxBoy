@@ -14,23 +14,20 @@
 
 #include "Processor.h"
 #include "Opcodes.h"
-
 #include "../GameBoy.h"
-#include "../memory/MemoryMap.h"
+#include "../memory/MemoryBus.h"
 
 #include "../../debug/Logger.h"
-
-#include <memory>
-
-using namespace Debug;
 
 
 namespace Core {
 
-Processor::Processor(GameBoy* gameboy, std::shared_ptr<MemoryMap>& memory_map, std::shared_ptr<Debug::Logger>& logger)
+Processor::Processor(GameBoy* gameboy,
+                     std::shared_ptr<Memory::MemoryBus>& memory_bus,
+                     std::shared_ptr<Debug::Logger>& logger)
 :
     gameboy (gameboy),
-    memory_map (memory_map),
+    memory_bus (memory_bus),
     logger (logger)
 {
     reg_PC.word = 0x0000;
@@ -127,7 +124,7 @@ void Processor::StartDMATransfer(u8 addrH)
     u16 address = addrH << 8;
     const int totalBytes = 40*4;
     for(int i = 0; i < totalBytes; i++)
-        memory_map->Write8(0xFE00+i, memory_map->Read8(address+i));
+        memory_bus->Write8(0xFE00+i, memory_bus->Read8(address+i));
 
     // TODO: cycle accuracy
 }
@@ -136,20 +133,20 @@ void Processor::StartDMATransfer(u8 addrH)
 // TODO: inline these
 u8 Processor::GetOperand8()
 {
-    return memory_map->Read8(reg_PC.word++);
+    return memory_bus->Read8(reg_PC.word++);
 }
 
 u16 Processor::GetOperand16()
 {
-    u16 operand = memory_map->Read16(reg_PC.word);
+    u16 operand = memory_bus->Read16(reg_PC.word);
     reg_PC.word += 2;
     return operand;
 }
 
 // Decodes and executes instruction
 int Processor::ExecuteNext()
-{
-    u8 opcode = memory_map->Read8(reg_PC.word++);
+{    
+    u8 opcode = memory_bus->Read8(reg_PC.word++);
     bool branch_taken = false;
     // the table to look for opcode information in
     const Opcode* opcode_lookup_table = OPCODE_LOOKUP;
@@ -193,33 +190,33 @@ int Processor::ExecuteNext()
         case 0x3E:
             ld_reg(reg_A, GetOperand8()); break;
         case 0x0A:
-            ld_reg(reg_A, memory_map->Read8(reg_BC.word)); break;
+            ld_reg(reg_A, memory_bus->Read8(reg_BC.word)); break;
         case 0x1A:
-            ld_reg(reg_A, memory_map->Read8(reg_DE.word)); break;
+            ld_reg(reg_A, memory_bus->Read8(reg_DE.word)); break;
         case 0x2A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL.word++)); break;
+            ld_reg(reg_A, memory_bus->Read8(reg_HL.word++)); break;
         case 0x3A:
-            ld_reg(reg_A, memory_map->Read8(reg_HL.word--)); break;
+            ld_reg(reg_A, memory_bus->Read8(reg_HL.word--)); break;
         case 0x46:
-            ld_reg(reg_B, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_B, memory_bus->Read8(reg_HL.word)); break;
         case 0x4E:
-            ld_reg(reg_C, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_C, memory_bus->Read8(reg_HL.word)); break;
         case 0x56:
-            ld_reg(reg_D, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_D, memory_bus->Read8(reg_HL.word)); break;
         case 0x5E:
-            ld_reg(reg_E, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_E, memory_bus->Read8(reg_HL.word)); break;
         case 0x66:
-            ld_reg(reg_H, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_H, memory_bus->Read8(reg_HL.word)); break;
         case 0x6E:
-            ld_reg(reg_L, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_L, memory_bus->Read8(reg_HL.word)); break;
         case 0x7E:
-            ld_reg(reg_A, memory_map->Read8(reg_HL.word)); break;
+            ld_reg(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0xF0:
-            ld_reg(reg_A, memory_map->Read8(0xFF00 + GetOperand8())); break;
+            ld_reg(reg_A, memory_bus->Read8(0xFF00 + GetOperand8())); break;
         case 0xF2:
-            ld_reg(reg_A, memory_map->Read8(0xFF00 + reg_C)); break;
+            ld_reg(reg_A, memory_bus->Read8(0xFF00 + reg_C)); break;
         case 0xFA:
-            ld_reg(reg_A, memory_map->Read8(GetOperand16())); break;
+            ld_reg(reg_A, memory_bus->Read8(GetOperand16())); break;
         case 0x40:
             ld_reg(reg_B, reg_B); break;
         case 0x41:
@@ -329,6 +326,8 @@ int Processor::ExecuteNext()
             ld_reg(reg_SP, GetOperand16()); break;
         case 0xF8:
             ld_reg(reg_HL, reg_SP.word + static_cast<s8>(GetOperand8())); break;
+        case 0xF9:
+            ld_reg(reg_SP, reg_HL.word); break;
 
         // LD (addr), u8
         case 0x02:
@@ -391,7 +390,7 @@ int Processor::ExecuteNext()
             inc(reg_SP); break;
         // INC (HL)
         case 0x34:
-            memory_map->Write8(reg_HL.word, memory_map->Read8(reg_HL.word) + 1); break;
+            memory_bus->Write8(reg_HL.word, memory_bus->Read8(reg_HL.word) + 1); break;
 
         // DEC reg8
         case 0x05:
@@ -419,7 +418,7 @@ int Processor::ExecuteNext()
             dec(reg_SP); break;
         // DEC (HL)
         case 0x35:
-            memory_map->Write8(reg_HL.word, memory_map->Read8(reg_HL.word) - 1); break;
+            memory_bus->Write8(reg_HL.word, memory_bus->Read8(reg_HL.word) - 1); break;
 
         // ADD reg8, u8
         case 0x80:
@@ -435,7 +434,7 @@ int Processor::ExecuteNext()
         case 0x85:
             add(reg_A, reg_L); break;
         case 0x86:
-            add(reg_A, memory_map->Read8(reg_HL.word)); break;
+            add(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0x87:
             add(reg_A, reg_A); break;
         case 0xC6:
@@ -467,7 +466,7 @@ int Processor::ExecuteNext()
         case 0x8D:
             adc(reg_A, reg_L); break;
         case 0x8E:
-            adc(reg_A, memory_map->Read8(GetOperand8())); break;
+            adc(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0x8F:
             adc(reg_A, reg_A); break;
         case 0xCE:
@@ -487,7 +486,7 @@ int Processor::ExecuteNext()
         case 0x95:
             sub(reg_A, reg_L); break;
         case 0x96:
-            sub(reg_A, memory_map->Read8(GetOperand8())); break;
+            sub(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0x97:
             sub(reg_A, reg_A); break;
         case 0xD6:
@@ -507,7 +506,7 @@ int Processor::ExecuteNext()
         case 0x9D:
             sbc(reg_A, reg_L); break;
         case 0x9E:
-            sbc(reg_A, memory_map->Read8(GetOperand8())); break;
+            sbc(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0x9F:
             sbc(reg_A, reg_A); break;
         case 0xDE:
@@ -527,7 +526,7 @@ int Processor::ExecuteNext()
         case 0xA5:
             and8(reg_A, reg_L); break;
         case 0xA6:
-            and8(reg_A, memory_map->Read8(GetOperand8())); break;
+            and8(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0xA7:
             and8(reg_A, reg_A); break;
         case 0xE6:
@@ -547,7 +546,7 @@ int Processor::ExecuteNext()
         case 0xAD:
             xor8(reg_A, reg_L); break;
         case 0xAE:
-            xor8(reg_A, memory_map->Read8(GetOperand8())); break;
+            xor8(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0xAF:
             xor8(reg_A, reg_A); break;
         case 0xEE:
@@ -569,7 +568,7 @@ int Processor::ExecuteNext()
         case 0xB5:
             or8(reg_A, reg_L); break;
         case 0xB6:
-            or8(reg_A, memory_map->Read8(GetOperand8())); break;
+            or8(reg_A, memory_bus->Read8(GetOperand8())); break;
         case 0xB7:
             or8(reg_A, reg_A); break;
         case 0xF6:
@@ -577,16 +576,16 @@ int Processor::ExecuteNext()
 
         // RLC reg8
         case 0x07:
-            rlc(reg_A); break;
+            rlc(reg_A, false); break;
         // RL reg8
         case 0x17:
-            rl(reg_A); break;
+            rl(reg_A, false); break;
         // RRC reg8
         case 0x0F:
-            rrc(reg_A); break;
+            rrc(reg_A, false); break;
         // RR reg8
         case 0x1F:
-            rr(reg_A); break;
+            rr(reg_A, false); break;
 
         // DAA
         case 0x27:
@@ -606,7 +605,7 @@ int Processor::ExecuteNext()
         case 0xBD:
             cp(reg_L); break;
         case 0xBE:
-            cp(memory_map->Read8(reg_HL.word)); break;
+            cp(memory_bus->Read8(reg_HL.word)); break;
         case 0xBF:
             cp(reg_A); break;
         case 0xFE:
@@ -803,7 +802,7 @@ int Processor::ExecuteNext()
 
         default:
             logger->LogDisassembly(reg_PC.word - 1, 1);
-            logger->Log(LogType::FATAL, "Unknown opcode!");
+            logger->Log(Debug::LogType::FATAL, "Unknown opcode!");
             gameboy->Stop();
     }
 
@@ -813,13 +812,19 @@ int Processor::ExecuteNext()
 
 u8 Processor::ExecuteCBOpcode()
 {
-    u8 opcode = memory_map->Read8(reg_PC.word++);
+    u8 opcode = memory_bus->Read8(reg_PC.word++);
 
     switch(opcode)
     {
         // RL reg8
         case 0x11:
-            rl(reg_C); break;
+            rl(reg_C, true); break;
+
+        // RR reg8
+        case 0x19:
+            rr(reg_C, true); break;
+        case 0x1A:
+            rr(reg_D, true); break;
 
         // SLA reg8
         case 0x27:
@@ -830,6 +835,8 @@ u8 Processor::ExecuteCBOpcode()
             swap(reg_A); break;
 
         // SRL reg8
+        case 0x38:
+            srl(reg_B); break;
         case 0x3F:
             srl(reg_A); break;
 
@@ -847,7 +854,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x45:
             bit(reg_L, 0); break;
         case 0x46:
-            bit(memory_map->Read8(reg_HL.word), 0); break;
+            bit(memory_bus->Read8(reg_HL.word), 0); break;
         case 0x47:
             bit(reg_A, 0); break;
         case 0x48:
@@ -863,7 +870,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x4D:
             bit(reg_L, 1); break;
         case 0x4E:
-            bit(memory_map->Read8(reg_HL.word), 1); break;
+            bit(memory_bus->Read8(reg_HL.word), 1); break;
         case 0x4F:
             bit(reg_A, 1); break;
         case 0x50:
@@ -879,7 +886,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x55:
             bit(reg_L, 2); break;
         case 0x56:
-            bit(memory_map->Read8(reg_HL.word), 2); break;
+            bit(memory_bus->Read8(reg_HL.word), 2); break;
         case 0x57:
             bit(reg_A, 2); break;
         case 0x58:
@@ -895,7 +902,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x5D:
             bit(reg_L, 3); break;
         case 0x5E:
-            bit(memory_map->Read8(reg_HL.word), 3); break;
+            bit(memory_bus->Read8(reg_HL.word), 3); break;
         case 0x5F:
             bit(reg_A, 3); break;
         case 0x60:
@@ -911,7 +918,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x65:
             bit(reg_L, 4); break;
         case 0x66:
-            bit(memory_map->Read8(reg_HL.word), 4); break;
+            bit(memory_bus->Read8(reg_HL.word), 4); break;
         case 0x67:
             bit(reg_A, 4); break;
         case 0x68:
@@ -927,7 +934,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x6D:
             bit(reg_L, 5); break;
         case 0x6E:
-            bit(memory_map->Read8(reg_HL.word), 5); break;
+            bit(memory_bus->Read8(reg_HL.word), 5); break;
         case 0x6F:
             bit(reg_A, 5); break;
         case 0x70:
@@ -943,7 +950,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x75:
             bit(reg_L, 6); break;
         case 0x76:
-            bit(memory_map->Read8(reg_HL.word), 6); break;
+            bit(memory_bus->Read8(reg_HL.word), 6); break;
         case 0x77:
             bit(reg_A, 6); break;
         case 0x78:
@@ -959,7 +966,7 @@ u8 Processor::ExecuteCBOpcode()
         case 0x7D:
             bit(reg_L, 7); break;
         case 0x7E:
-            bit(memory_map->Read8(reg_HL.word), 7); break;
+            bit(memory_bus->Read8(reg_HL.word), 7); break;
         case 0x7F:
             bit(reg_A, 7); break;
 
@@ -979,7 +986,7 @@ u8 Processor::ExecuteCBOpcode()
 
         default:
             logger->LogDisassembly(reg_PC.word - 2, 1);
-            logger->Log(LogType::FATAL, "Unknown extended opcode!");
+            logger->Log(Debug::LogType::FATAL, "Unknown extended opcode!");
             gameboy->Stop();
     }
 

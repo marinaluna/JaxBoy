@@ -20,9 +20,12 @@
 
 
 namespace Core {
-    class MemoryMap;
     class Processor;
 }; // namespace Core
+
+namespace Memory {
+    class MemoryBus;
+}; // namespace Memory
 
 namespace Debug {
 
@@ -35,10 +38,9 @@ enum LogType
 
 class Logger
 {
-    std::shared_ptr<Core::MemoryMap> memory_map;
-
+    std::shared_ptr<Memory::MemoryBus> memory_bus;
 public:
-    Logger(std::shared_ptr<Core::MemoryMap>& memory_map);
+    Logger(std::shared_ptr<Memory::MemoryBus>& memory_bus);
 
     void Log(LogType type, const std::string& msg);
 

@@ -12,33 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Globals.h"
+#pragma once
 
-#include "../external/MiniFB/MiniFB.h"
+#include "MemoryController.h"
 
 
-const char* gAppName = "JaxBoy";
-
-u8 gBitMasks[8] = 
-{
-    0b00000001,
-    0b00000010,
-    0b00000100,
-    0b00001000,
-    0b00010000,
-    0b00100000,
-    0b01000000,
-    0b10000000
+namespace Core {
+    class GameBoy;
 };
 
-const Color gColors[4] =
+namespace Memory {
+
+class IORegisterMemoryController
+: public MemoryController
 {
-    // White
-    MFB_RGB(0x9B, 0xBC, 0x0F),
-    // Light Grey
-    MFB_RGB(0x8B, 0xAC, 0x0F),
-    // Dark Grey
-    MFB_RGB(0x30, 0x62, 0x30),
-    // Black
-    MFB_RGB(0x0F, 0x38, 0x0F)
+public:
+    IORegisterMemoryController(Core::GameBoy* gameboy);
+
+    virtual void Write8(u16 address, u8 data);
+    virtual u8 Read8(u16 address);
 };
+
+}; // namespace Memory

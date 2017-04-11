@@ -13,53 +13,40 @@
 // limitations under the License.
 
 #pragma once
+// I have no idea why I need to include this
+#include "controller/MemoryController.h"
 
 #include "../../common/Types.h"
 
-#include <vector>
+#include <memory>
 
-
-struct MemoryPage
-{
-    std::vector<u8> bytes;
-    u16 base;
-    MemoryPage(u16 size, u16 base): bytes(size), base(base){}
-};
 
 namespace Core {
+    class GameBoy;
+}; // namespace Core
 
-class GameBoy;
+namespace Memory {
+class MemoryController;
 
-class MemoryMap
+class MemoryBus
 {
-    GameBoy* gameboy;
+    // Default controllers for system memory
+    // and for handling IO Register reads/writes
+    std::unique_ptr<MemoryController> defaultMemoryController;
+    std::unique_ptr<MemoryController> ioMemoryController;
+    std::unique_ptr<MemoryController>& GetMemoryController(u16 address);
 
-    // 0x0000-0x7FFF
-    MemoryPage RegionROM;
-    // 0x8000-0x9FFF
-    MemoryPage RegionVRAM;
-    // 0xA000-0xBFFF
-    MemoryPage RegionSaveRAM;
-    // 0xC000-0xDFFF
-    MemoryPage RegionWRAM;
-    // 0xFE00-0xFE9F
-    MemoryPage RegionOAM;
-    // 0xFF80-0xFFFE
-    MemoryPage RegionZeroPage;
-
-    MemoryPage* GetPage(u16 address);
-
+    Core::GameBoy* gameboy;
 public:
-
-    MemoryMap(GameBoy* gameboy);
+    MemoryBus(Core::GameBoy* gameboy);
 
     void Write8(u16 address, u8 data);
     void Write16(u16 address, u16 data);
     u8 Read8(u16 address);
     u16 Read16(u16 address);
 
-    void WriteBytes(u16 address, const std::vector<u8>& src, u16 startOffset, u16 bytes);
-    void CopyBytes(u8* destination, u16 address, u16 bytes);
+    void WriteBytes(const u8* src, u16 destination, u16 size);
+    void ReadBytes(u8* destination, u16 src, u16 size);
 };
 
-}; // namespace Core
+}; // namespace Memory

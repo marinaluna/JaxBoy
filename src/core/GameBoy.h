@@ -24,12 +24,15 @@ namespace Debug {
     class Logger;
 }; // namespace Debug
 
-namespace Core {
+namespace Memory {
+    class MemoryBus;
+    class IORegisterMemoryController;
+}; // namespace Memory
 
+namespace Core {
 class Processor;
 class PPU;
 class Rom;
-class MemoryMap;
 
 class GameBoy
 {
@@ -37,19 +40,27 @@ public:
     struct Options
     {
         bool isDebug = false;
+        int scale = 1;
     };
 
-    GameBoy(GameBoy::Options& options, const std::vector<u8>& rom, const std::vector<u8>& bootrom);
+    GameBoy(GameBoy::Options& options,
+            const std::vector<u8>& rom,
+            const std::vector<u8>& bootrom);
 
     void Run();
-    void Stop() { Stopped = true; }
+    void Stop()
+        { Stopped = true; }
 
-    void IORegisterWrite(u16 address, u8 value);
-    u8 IORegisterRead(u16 address);
+    void SystemError(const std::string& error_msg);
 
-    bool IsInBootROM() { return InBootROM; }
+    bool IsInBootROM()
+        { return InBootROM; }
+    std::unique_ptr<Rom>& GetCurrentROM()
+        { return game_rom; };
 
 private:
+    friend class Memory::IORegisterMemoryController;
+
     // Options configuration
     GameBoy::Options _Options;
 
@@ -58,7 +69,7 @@ private:
     std::unique_ptr<PPU> ppu;
     std::unique_ptr<Rom> game_rom;
     // System memory map
-    std::shared_ptr<MemoryMap> memory_map;
+    std::shared_ptr<Memory::MemoryBus> memory_bus;
     // Logger
     std::shared_ptr<Debug::Logger> logger;
 

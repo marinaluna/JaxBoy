@@ -29,8 +29,6 @@ class GameBoy;
 
 class Rom
 {
-    friend class GameBoy;
-
     struct Header
     {
         char Name[16];
@@ -50,7 +48,11 @@ class Rom
     std::shared_ptr<Debug::Logger> logger;
 
 public:
-    Rom(const std::vector<u8>& bytes, const std::shared_ptr<Debug::Logger>& logger);
+    Rom(const std::vector<u8>& bytes,
+        const std::shared_ptr<Debug::Logger>& logger);
+
+    std::vector<u8>& GetBytes()
+        { return bytes; }
 };
 
 }; // namespace Core

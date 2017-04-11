@@ -24,7 +24,8 @@ run:$(BINARY)
 clean:
 	rm -rf build/*
 	mkdir -p build/src/core
-	mkdir -p build/src/core/memory
 	mkdir -p build/src/core/processor
+	mkdir -p build/src/core/memory
+	mkdir -p build/src/core/memory/controller
 	mkdir -p build/src/common
 	mkdir -p build/src/debug

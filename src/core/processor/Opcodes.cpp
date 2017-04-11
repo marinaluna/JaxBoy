@@ -13,10 +13,9 @@
 // limitations under the License.
 
 #include "Processor.h"
+#include "../memory/MemoryBus.h"
 
-#include "../../common/Types.h"
 #include "../../common/Globals.h"
-#include "../memory/MemoryMap.h"
 
 
 namespace Core {
@@ -34,11 +33,11 @@ void Processor::ld_reg(Reg16& reg, u16 value)
 // write
 void Processor::ld_addr(u16 addr, u8 value)
 {
-    memory_map->Write8(addr, value);
+    memory_bus->Write8(addr, value);
 }
 void Processor::ld_addr(u16 addr, u16 value)
 {
-    memory_map->Write16(addr, value);
+    memory_bus->Write16(addr, value);
 }
 
 // inc/dec
@@ -220,44 +219,61 @@ void Processor::ret()
 void Processor::push(u16 value)
 {
     reg_SP.word -= 2;
-    memory_map->Write16(reg_SP.word, value);
+    memory_bus->Write16(reg_SP.word, value);
 }
 
 void Processor::pop(Reg16& reg16)
 {
-    reg16.word = memory_map->Read16(reg_SP.word);
+    reg16.word = memory_bus->Read16(reg_SP.word);
     reg_SP.word += 2;
 }
 
 // CB opcodes
 // rotate
-void Processor::rlc(Reg8& reg)
+// The CB versions of these instructions modify Zero
+void Processor::rlc(Reg8& reg, bool modifyFlags)
 {
     bool newCarry = (reg & 0b10000000) != 0;
     reg <<= 1;
     reg |= (newCarry? 1 : 0);
     F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = modifyFlags? reg == 0x00 : false;
 }
-void Processor::rl(Reg8& reg)
+void Processor::rl(Reg8& reg, bool modifyFlags)
 {
     bool newCarry = (reg & 0b10000000) != 0;
     reg <<= 1;
     reg |= (F_Carry? 1 : 0);
     F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = modifyFlags? reg == 0x00 : false;
 }
-void Processor::rrc(Reg8& reg)
+void Processor::rrc(Reg8& reg, bool modifyFlags)
 {
     bool newCarry = (reg & 0b00000001) != 0;
     reg >>= 1;
     reg |= (newCarry? 0b10000000 : 0);
     F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = modifyFlags? reg == 0x00 : false;
 }
-void Processor::rr(Reg8& reg)
+void Processor::rr(Reg8& reg, bool modifyFlags)
 {
     bool newCarry = (reg & 0b00000001) != 0;
     reg >>= 1;
     reg |= (F_Carry? 0b10000000 : 0);
     F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = modifyFlags? reg == 0x00 : false;
 }
 
 // shift
@@ -265,17 +281,27 @@ void Processor::sla(Reg8& reg)
 {
     F_Carry = (reg & 0b10000000) != 0;
     reg <<= 1;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = reg == 0x00;
 }
 void Processor::srl(Reg8& reg)
 {
     bool newCarry = (reg & 0b0000001) != 0;
     reg >>= 1;
     F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = reg == 0x00;
 }
 
 // bit
 void Processor::bit(u8 byte, u8 bit)
 {
+    F_Subtract = false;
+    F_HalfCarry = true;
     F_Zero = (byte & gBitMasks[bit]) == 0;
 }
 
@@ -284,6 +310,9 @@ void Processor::swap(Reg8& reg)
 {
     reg = ((reg & 0xFF) << 8) | ((reg & 0xFF00) >> 8);
 
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Carry = false;
     F_Zero = reg == 0;
 }
 
@@ -294,7 +323,7 @@ void Processor::res(Reg8& reg, u8 bit)
 }
 void Processor::res_addr(u16 addr, u8 bit)
 {
-    memory_map->Write8(addr, memory_map->Read8(addr) & ~gBitMasks[bit]);
+    memory_bus->Write8(addr, memory_bus->Read8(addr) & ~gBitMasks[bit]);
 }
 
 // set bit
