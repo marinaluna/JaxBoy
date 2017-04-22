@@ -38,7 +38,7 @@ Only roms that have been tested are listed.
 | Pokemon Blue                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Tennis                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. Cannot play without controls. |
-| Tetris                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. Demo desyncs when placing blocks. |
+| Tetris                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. Score is incorrecly counted. |
 
 ## Building and running
 
