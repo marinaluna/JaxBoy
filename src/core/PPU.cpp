@@ -16,10 +16,8 @@
 #include "memory/MemoryBus.h"
 
 #include "../common/Globals.h"
-
+// For frontend framebuffer purposes
 #include "../external/MiniFB/MiniFB.h"
-
-#include <cmath>
 
 
 namespace Core {
@@ -60,11 +58,14 @@ PPU::~PPU()
 
 int PPU::Tick(int cycles)
 {
-    static int shit = 400;
-    if(shit-- > 0)
+    // Dirty hack to limit framerate without VSync
+    static int framelimiter = 400;
+    if(framelimiter-- > 0)
         return 0;
     else
-        shit = 400;
+        framelimiter = 400;
+
+
     int return_code = 0;
     if((LCDC & 0b10000000) != 0)
     {
@@ -95,7 +96,7 @@ int PPU::Tick(int cycles)
                 break;
             case DISPLAY_VBLANK:
                 // Have we completed a scanline?
-                if((floor(frameCycles / 465) + 144) > Line)
+                if((static_cast<int>(frameCycles / 465) + 144) > Line)
                 {
                     if(++Line > 153)
                     {

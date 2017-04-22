@@ -37,11 +37,14 @@ Processor::Processor(GameBoy* gameboy,
 
 int Processor::Tick()
 {
-    static int shit = 400;
-    if(shit-- > 0)
+    // Dirty hack to limit framerate without VSync
+    static int framelimiter = 400;
+    if(framelimiter-- > 0)
         return 0;
     else
-        shit = 400;
+        framelimiter = 400;
+
+
     int new_cycles = ExecuteNext();
     new_cycles += TickInterrupts();
 

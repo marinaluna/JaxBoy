@@ -28,7 +28,7 @@ namespace Debug {
 namespace Logger {
     // generic log
     void Log(const std::string prefix, const std::string& msg);
-    // Log processor regiser states
+    // Log processor register states
     void LogRegisters(const Core::Processor& processor);
     // Log IO Registers in memory
     void LogIORegisters(std::shared_ptr<Memory::MemoryBus>& memory_bus);
