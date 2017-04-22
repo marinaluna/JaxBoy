@@ -23,12 +23,10 @@
 namespace Core {
 
 Processor::Processor(GameBoy* gameboy,
-                     std::shared_ptr<Memory::MemoryBus>& memory_bus,
-                     std::shared_ptr<Debug::Logger>& logger)
+                     std::shared_ptr<Memory::MemoryBus>& memory_bus)
 :
     gameboy (gameboy),
-    memory_bus (memory_bus),
-    logger (logger)
+    memory_bus (memory_bus)
 {
     reg_PC.word = 0x0000;
     reg_SP.word = 0x0000;
@@ -39,6 +37,11 @@ Processor::Processor(GameBoy* gameboy,
 
 int Processor::Tick()
 {
+    static int shit = 400;
+    if(shit-- > 0)
+        return 0;
+    else
+        shit = 400;
     int new_cycles = ExecuteNext();
     new_cycles += TickInterrupts();
 
@@ -801,8 +804,8 @@ int Processor::ExecuteNext()
             pop(reg_AF); break;
 
         default:
-            logger->LogDisassembly(reg_PC.word - 1, 1);
-            logger->Log(Debug::LogType::FATAL, "Unknown opcode!");
+            Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
+            LOG_ERROR("Unknown opcode!");
             gameboy->Stop();
     }
 
@@ -985,8 +988,8 @@ u8 Processor::ExecuteCBOpcode()
             set(reg_A, 7); break;
 
         default:
-            logger->LogDisassembly(reg_PC.word - 2, 1);
-            logger->Log(Debug::LogType::FATAL, "Unknown extended opcode!");
+            Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 2, 1);
+            LOG_ERROR("Unknown extended opcode!");
             gameboy->Stop();
     }
 

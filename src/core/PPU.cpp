@@ -25,8 +25,7 @@
 namespace Core {
 
 PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
-         std::shared_ptr<Memory::MemoryBus>& memory_bus,
-         std::shared_ptr<Debug::Logger>& logger)
+         std::shared_ptr<Memory::MemoryBus>& memory_bus)
 :
     gameboy (gameboy),
     lcd_width (width),
@@ -34,8 +33,7 @@ PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
     lcd_scale (scale),
     buffer_width((width*scale)+2),
     buffer_height((height*scale)+24),
-    memory_bus (memory_bus),
-    logger (logger)
+    memory_bus (memory_bus)
 {
     // initialize the LCD
     mfb_open(gAppName, buffer_width, buffer_height);
@@ -62,6 +60,11 @@ PPU::~PPU()
 
 int PPU::Tick(int cycles)
 {
+    static int shit = 400;
+    if(shit-- > 0)
+        return 0;
+    else
+        shit = 400;
     int return_code = 0;
     if((LCDC & 0b10000000) != 0)
     {

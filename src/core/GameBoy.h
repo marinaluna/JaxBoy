@@ -20,10 +20,6 @@
 #include <vector>
 
 
-namespace Debug {
-    class Logger;
-}; // namespace Debug
-
 namespace Memory {
     class MemoryBus;
     class IORegisterMemoryController;
@@ -70,8 +66,6 @@ private:
     std::unique_ptr<Rom> game_rom;
     // System memory map
     std::shared_ptr<Memory::MemoryBus> memory_bus;
-    // Logger
-    std::shared_ptr<Debug::Logger> logger;
 
     bool InBootROM = false;
     bool Stopped = false;

@@ -24,28 +24,14 @@
 
 
 namespace Debug {
+namespace Logger {
 
-Logger::Logger(std::shared_ptr<Memory::MemoryBus>& memory_bus)
-:
-    memory_bus (memory_bus)
-{}
-
-void Logger::Log(LogType type, const std::string& msg)
+void Log(const std::string prefix, const std::string& msg)
 {
-    switch(type)
-    {
-        case LogType::WARN:
-            std::cout << "\033[31mWARN: " << msg << "\033[0m\n";
-            break;
-        case LogType::FATAL:
-            std::cout << "\033[31mERROR: " << msg << "\033[0m\n";
-            break;
-        default:
-            std::cout << msg << "\n";
-    }
+    std::cout << prefix << msg << "\n";
 }
 
-void Logger::LogRegisters(const Core::Processor& processor)
+void LogRegisters(const Core::Processor& processor)
 {
     u8 zero = (processor.F_Zero)? 0b10000000 : 0;
     u8 subtract = (processor.F_Subtract)? 0b01000000 : 0;
@@ -64,7 +50,7 @@ void Logger::LogRegisters(const Core::Processor& processor)
     std::cout << std::endl;
 }
 
-void Logger::LogIORegisters()
+void LogIORegisters(std::shared_ptr<Memory::MemoryBus>& memory_bus)
 {
     std::cout << "LCDC: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF40)) << "h\n";
     std::cout << "STAT: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(memory_bus->Read8(0xFF41)) << "h\n";
@@ -76,7 +62,7 @@ void Logger::LogIORegisters()
     std::cout << std::endl;
 }
 
-void Logger::LogMemory(u16 address, u16 bytes)
+void LogMemory(std::shared_ptr<Memory::MemoryBus>& memory_bus, u16 address, u16 bytes)
 {
     // print a column label at the beginning
     std::cout << "\033[33m" << "       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" << "\033[0m\n";
@@ -98,13 +84,7 @@ void Logger::LogMemory(u16 address, u16 bytes)
     std::cout << std::endl;
 }
 
-void Logger::LogVRAM()
-{
-    std::cout << "VRAM: 8000h - BFFFh\n";
-    LogMemory(0x8000, 0x4000);
-}
-
-void Logger::LogDisassembly(u16 address, u16 instructions)
+void LogDisassembly(std::shared_ptr<Memory::MemoryBus>& memory_bus, u16 address, u16 instructions)
 {
     u8 opcode;
     u8 operand8;
@@ -114,8 +94,7 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
         // print the address
 
         opcode = memory_bus->Read8(address++);
-        // Get the proper lookup table for opcodes,
-        // the 1337 way
+        // Get the proper lookup table for opcodes
         const Opcode* lookup_table = OPCODE_LOOKUP;
         u8 operand_adder = 0;
         if(opcode == 0xCB)
@@ -152,5 +131,5 @@ void Logger::LogDisassembly(u16 address, u16 instructions)
     }
 }
 
-
+}; // namespace Logger
 }; // namespace Debug

@@ -16,17 +16,25 @@
 
 #include "../../common/Types.h"
 
+//#include "../../debug/Logger.h"
+
 #include <memory>
 
-
-namespace Debug {
-    class Logger;
-}; // namespace Debug
 
 namespace Memory {
     class MemoryBus;
     class IORegisterMemoryController;
 }; // namespace Memory
+
+// needed to make LogRegisters a friend of Processor
+namespace Core {
+    class Processor;
+}; // namespace Core
+namespace Debug {
+    namespace Logger {
+        void LogRegisters(const Core::Processor& processor);
+    }; // namespace Logger
+}; // namespace Debug
 
 namespace Core {
 class GameBoy;
@@ -34,7 +42,7 @@ class GameBoy;
 class Processor
 {
     friend class Memory::IORegisterMemoryController;
-    friend class Debug::Logger;
+    friend void Debug::Logger::LogRegisters(const Core::Processor& processor);
 
     // 16-bit program counter and stack pointer
     Reg16 reg_PC;
@@ -67,12 +75,9 @@ class Processor
     GameBoy* gameboy;
     std::shared_ptr<Memory::MemoryBus> memory_bus;
 
-    std::shared_ptr<Debug::Logger> logger;
-
 public:
     Processor(GameBoy* gameboy,
-              std::shared_ptr<Memory::MemoryBus>& memory_bus,
-              std::shared_ptr<Debug::Logger>& logger);
+              std::shared_ptr<Memory::MemoryBus>& memory_bus);
 
     int Tick();
 
@@ -85,7 +90,7 @@ public:
     int ExecuteNext();
     u8 ExecuteCBOpcode();
 
-    // instructions
+    // Instructions
     // load
     void ld_reg(Reg8& reg, u8 value);
     void ld_reg(Reg16& reg, u16 value);

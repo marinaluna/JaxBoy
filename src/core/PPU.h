@@ -20,10 +20,6 @@
 #include <memory>
 
 
-namespace Debug {
-    class Logger;
-}; // namespace Debug
-
 namespace Memory {
     class MemoryBus;
     class IORegisterMemoryController;
@@ -128,12 +124,9 @@ class PPU
     GameBoy* gameboy;
     std::shared_ptr<Memory::MemoryBus> memory_bus;
 
-    std::shared_ptr<Debug::Logger> logger;
-
 public:
     PPU(GameBoy* gameboy, int width, int height, int scale,
-        std::shared_ptr<Memory::MemoryBus>& memory_bus,
-        std::shared_ptr<Debug::Logger>& logger);
+        std::shared_ptr<Memory::MemoryBus>& memory_bus);
     ~PPU();
 
     int Tick(int cycles);
@@ -142,8 +135,6 @@ public:
     void DrawScanlineSprites();
     void FetchScanlineSprites();
     void DecodeTiles();
-
-    void SystemError(const std::string& error_msg);
 };
 
 }; // namespace Core

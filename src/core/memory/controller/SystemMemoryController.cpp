@@ -19,9 +19,7 @@
 
 
 namespace Memory {
-/*
-******  SystemMemoryController
-*/
+
 SystemMemoryController::SystemMemoryController(Core::GameBoy* gameboy)
 : MemoryController (gameboy),
 

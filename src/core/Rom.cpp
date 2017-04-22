@@ -22,18 +22,21 @@
 
 namespace Core {
 
-Rom::Rom(const std::vector<u8>& bytes,
-         const std::shared_ptr<Debug::Logger>& logger)
+Rom::Rom(const std::vector<u8>& bytes)
 :
-    bytes (bytes),
-    logger (logger)
+    bytes (bytes)
 {
     // copy the rom name (in newer carts the end of this is used by manufacturer code)
     std::copy(bytes.begin() + 0x134, bytes.begin() + 0x143, header.Name);
-    logger->Log(Debug::LogType::MSG, "Loaded rom: " + std::string(header.Name));
+    LOG_MSG("Loaded rom: " + std::string(header.Name));
     // copy the new manufacturer code
     std::copy(bytes.begin() + 0x13F, bytes.begin() + 0x143, header.Manufacturer);
     header.UsesSGBFeatures = bytes.at(0x146) == 0x03; // 3 means yes, 0 means no
+    header.RomSize = bytes.at(0x148);
+    header.RamSize = bytes.at(0x149);
+    header.International = bytes.at(0x14A) == 0x01; // 00 means Japan, 01 means international
+    header.Licensee = bytes.at(0x14B); // if 33, SGB functions don't work
+    header.VersionCode = bytes.at(0x14C); // usually 00
 
     // Cart Type specifies which MBC type is used in the cart,
     // and what external hardware (i.e. battery) is included.
@@ -57,14 +60,8 @@ Rom::Rom(const std::vector<u8>& bytes,
     header.CartType = bytes.at(0x147);
     if(header.CartType != 0x00)
     {
-        logger->Log(Debug::LogType::WARN, "Unsupported cart type!");
+        LOG_WARN("Unsupported cart type!");
     }
-    
-    header.RomSize = bytes.at(0x148);
-    header.RamSize = bytes.at(0x149);
-    header.International = bytes.at(0x14A) == 0x01; // 00 means Japan, 01 means international
-    header.Licensee = bytes.at(0x14B); // if 33, SGB functions don't work
-    header.VersionCode = bytes.at(0x14C); // usually 00
 }
 
 }; // namespace Core

@@ -15,40 +15,39 @@
 #pragma once
 
 #include "../common/Types.h"
+#include "../core/memory/MemoryBus.h"
 
 #include <memory>
-
+#include <string>
 
 namespace Core {
     class Processor;
 }; // namespace Core
 
-namespace Memory {
-    class MemoryBus;
-}; // namespace Memory
-
 namespace Debug {
-
-enum LogType
-{
-    MSG,
-    WARN,
-    FATAL
-};
-
-class Logger
-{
-    std::shared_ptr<Memory::MemoryBus> memory_bus;
-public:
-    Logger(std::shared_ptr<Memory::MemoryBus>& memory_bus);
-
-    void Log(LogType type, const std::string& msg);
-
+namespace Logger {
+    // generic log
+    void Log(const std::string prefix, const std::string& msg);
+    // Log processor regiser states
     void LogRegisters(const Core::Processor& processor);
-    void LogIORegisters();
-    void LogMemory(u16 address, u16 bytes);
-    void LogVRAM();
-    void LogDisassembly(u16 address, u16 bytes);
-};
-
+    // Log IO Registers in memory
+    void LogIORegisters(std::shared_ptr<Memory::MemoryBus>& memory_bus);
+    // Log a chunk of memory specified by the caller
+    void LogMemory(std::shared_ptr<Memory::MemoryBus>& memory_bus,
+                   u16 address, u16 bytes);
+    // Disassembles instructions and logs the result
+    void LogDisassembly(std::shared_ptr<Memory::MemoryBus>& memory_bus,
+                        u16 address, u16 bytes);
+}; // namespace Logger
 }; // namespace Debug
+
+// Quick macros for messages
+#define LOG_MSG(msg)    \
+    Debug::Logger::Log("INFO: ", msg);
+#define LOG_WARN(msg)   \
+    Debug::Logger::Log("WARN: ", msg);
+#define LOG_ERROR(msg)  \
+    Debug::Logger::Log("ERROR: ", msg);
+#define LOG_VRAM(memory_bus)                          \
+    LOG_MSG("VRAM: 8000h - BFFFh\n");   \
+    LogMemory(memory_bus, 0x8000, 0x4000);

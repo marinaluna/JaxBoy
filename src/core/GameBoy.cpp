@@ -35,11 +35,10 @@ GameBoy::GameBoy(GameBoy::Options& options,
 {
     memory_bus = std::make_shared<Memory::MemoryBus>(this);
 
-    logger = std::make_shared<Debug::Logger>(memory_bus);
-    processor = std::unique_ptr<Processor> (new Processor(this, memory_bus, logger));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_bus, logger));
+    processor = std::unique_ptr<Processor> (new Processor(this, memory_bus));
+    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 1, memory_bus));
 
-    game_rom = std::unique_ptr<Rom> (new Rom(rom, logger));
+    game_rom = std::unique_ptr<Rom> (new Rom(rom));
 
     // load boot ROM at 0x0000
     memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x100);
@@ -65,7 +64,7 @@ void GameBoy::Run()
 
 void GameBoy::SystemError(const std::string& error_msg)
 {
-    logger->Log(Debug::LogType::FATAL, error_msg);
+    LOG_ERROR(error_msg);
     Stop();
 }
 
