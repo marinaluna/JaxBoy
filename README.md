@@ -22,6 +22,8 @@ The emulator currently runs at varying speeds (usually too fast) as there is no 
 ![tennis](screenshots/tennis.png)
 ![drmario](screenshots/drmario.png)
 ![alleyway](screenshots/alleyway.png)
+![catrap](screenshots/catrap.png)
+![gameboygallery](screenshots/gameboygallery.png)
 
 ## Known game compatibility
 
@@ -43,9 +45,9 @@ Only roms that have been tested are listed.
 | Flipull                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
 | Game of Harmony, The                      | 🔵⚪️⚪️⚪️⚪️ |   Flips through a series of screens, then crashes. Has graphical errors. |
 | Gameboy Gallery                           | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, then crashes. |
-| Kwirk                                     | ⚪⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Kwirk                                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Legend of Zelda: Link's Awakening, The    | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Loopz                                     | ⚪⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Loopz                                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Missile Command                           | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, but crashes during demo. Severe graphical errors. |
 | Motocross Maniacs                         | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | NFL Football                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
