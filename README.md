@@ -24,6 +24,7 @@ The emulator currently runs at varying speeds (usually too fast) as there is no 
 ![alleyway](screenshots/alleyway.png)
 ![catrap](screenshots/catrap.png)
 ![gameboygallery](screenshots/gameboygallery.png)
+![crystalquest](screenshots/crystalquest.png)
 
 ## Known game compatibility
 
