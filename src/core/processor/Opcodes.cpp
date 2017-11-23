@@ -361,5 +361,9 @@ void Processor::set(Reg8& reg, u8 bit)
 {
     reg |= (0x1 << bit);
 }
+void Processor::setAt(u16 addr, u8 bit)
+{
+    memory_bus->Write8(addr, memory_bus->Read8(addr) | (0x1 << bit));
+}
 
 }; // namespace Core

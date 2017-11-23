@@ -36,7 +36,7 @@ GameBoy::GameBoy(GameBoy::Options& options,
     memory_bus = std::make_shared<Memory::MemoryBus>(this);
 
     processor = std::unique_ptr<Processor> (new Processor(this, memory_bus));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 1, memory_bus));
+    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_bus));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom));
 

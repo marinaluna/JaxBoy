@@ -21,6 +21,7 @@ The emulator currently runs at varying speeds (usually too fast) as there is no 
 ![tetris2](screenshots/tetris2.png)
 ![tennis](screenshots/tennis.png)
 ![drmario](screenshots/drmario.png)
+![alleyway](screenshots/alleyway.png)
 
 ## Known game compatibility
 
@@ -29,7 +30,7 @@ Only roms that have been tested are listed.
 
 | Game | Compatibility | Notes |
 | --- | --- | --- |
-| Alleyway                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Alleyway                                  | 🔵⚪️⚪️⚪️⚪️ |   Boots and starts game, with graphical errors. |
 | Baseball                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Castlevania Adventure                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Donkey Kong                               | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |

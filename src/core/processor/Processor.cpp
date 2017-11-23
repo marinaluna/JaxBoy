@@ -832,7 +832,13 @@ u8 Processor::ExecuteCBOpcode()
         case 0x1A:
             rr(reg_D, true); break;
 
+        // RRC reg8
+        case 0x09:
+            rrc(reg_C, true); break;
+
         // SLA reg8
+        case 0x23:
+            sla(reg_E); break;
         case 0x27:
             sla(reg_A); break;
 
@@ -991,6 +997,8 @@ u8 Processor::ExecuteCBOpcode()
         // SET x, reg8
         case 0xC7:
             set(reg_A, 0); break;
+        case 0xDE:
+            setAt(reg_HL.word, 3); break;
         case 0xFF:
             set(reg_A, 7); break;
 

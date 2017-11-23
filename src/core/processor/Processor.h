@@ -146,6 +146,7 @@ public:
     void resAt(u16 addr, u8 bit);
     // set bit
     void set(Reg8& reg, u8 bit);
+    void setAt(u16 addr, u8 bit);
 };
 
 }; // namespace Core
