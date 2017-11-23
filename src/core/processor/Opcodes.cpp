@@ -254,7 +254,7 @@ void Processor::pop(Reg16& reg16)
 // CB opcodes
 // rotate
 // The CB versions of these instructions modify Zero
-void Processor::rlc(Reg8& reg, bool modifyFlags)
+void Processor::rlc(Reg8& reg, bool zero)
 {
     bool newCarry = reg & 0b10000000;
     reg <<= 1;
@@ -263,9 +263,22 @@ void Processor::rlc(Reg8& reg, bool modifyFlags)
 
     F_Subtract = false;
     F_HalfCarry = false;
-    F_Zero = modifyFlags? reg == 0x00 : false;
+    F_Zero = zero? reg == 0x00 : false;
 }
-void Processor::rl(Reg8& reg, bool modifyFlags)
+void Processor::rlcAt(u16 addr, bool zero)
+{
+    u8 value = memory_bus->Read8(addr);
+    bool newCarry = value & 0b10000000;
+    value <<= 1;
+    value |= newCarry;
+    F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = zero? value == 0x00 : false;
+    memory_bus->Write8(addr, value);
+}
+void Processor::rl(Reg8& reg, bool zero)
 {
     bool newCarry = reg & 0b10000000;
     reg <<= 1;
@@ -274,9 +287,22 @@ void Processor::rl(Reg8& reg, bool modifyFlags)
 
     F_Subtract = false;
     F_HalfCarry = false;
-    F_Zero = modifyFlags? reg == 0x00 : false;
+    F_Zero = zero? reg == 0x00 : false;
 }
-void Processor::rrc(Reg8& reg, bool modifyFlags)
+void Processor::rlAt(u16 addr, bool zero)
+{
+    u8 value = memory_bus->Read8(addr);
+    bool newCarry = value & 0b10000000;
+    value <<= 1;
+    value |= F_Carry;
+    F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = zero? value == 0x00 : false;
+    memory_bus->Write8(addr, value);
+}
+void Processor::rrc(Reg8& reg, bool zero)
 {
     bool newCarry = reg & 0b00000001;
     reg >>= 1;
@@ -285,9 +311,22 @@ void Processor::rrc(Reg8& reg, bool modifyFlags)
 
     F_Subtract = false;
     F_HalfCarry = false;
-    F_Zero = modifyFlags? reg == 0x00 : false;
+    F_Zero = zero? reg == 0x00 : false;
 }
-void Processor::rr(Reg8& reg, bool modifyFlags)
+void Processor::rrcAt(u16 addr, bool zero)
+{
+    u8 value = memory_bus->Read8(addr);
+    bool newCarry = value & 0b00000001;
+    value >>= 1;
+    value |= newCarry << 7;
+    F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = zero? value == 0x00 : false;
+    memory_bus->Write8(addr, value);
+}
+void Processor::rr(Reg8& reg, bool zero)
 {
     bool newCarry = reg & 0b00000001;
     reg >>= 1;
@@ -296,7 +335,20 @@ void Processor::rr(Reg8& reg, bool modifyFlags)
 
     F_Subtract = false;
     F_HalfCarry = false;
-    F_Zero = modifyFlags? reg == 0x00 : false;
+    F_Zero = zero? reg == 0x00 : false;
+}
+void Processor::rrAt(u16 addr, bool zero)
+{
+    u8 value = memory_bus->Read8(addr);
+    bool newCarry = value & 0b00000001;
+    value >>= 1;
+    value |= F_Carry << 7;
+    F_Carry = newCarry;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = zero? value == 0x00 : false;
+    memory_bus->Write8(addr, value);
 }
 
 // shift
@@ -309,6 +361,17 @@ void Processor::sla(Reg8& reg)
     F_HalfCarry = false;
     F_Zero = reg == 0x00;
 }
+void Processor::slaAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+    F_Carry = value & 0b10000000;
+    value <<= 1;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = value == 0x00;
+    memory_bus->Write8(addr, value);
+}
 void Processor::srl(Reg8& reg)
 {
     F_Carry = reg & 0b00000001;
@@ -317,6 +380,39 @@ void Processor::srl(Reg8& reg)
     F_Subtract = false;
     F_HalfCarry = false;
     F_Zero = reg == 0x00;
+}
+void Processor::srlAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+    F_Carry = value & 0b00000001;
+    value >>= 1;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = value == 0x00;
+    memory_bus->Write8(addr, value);
+}
+void Processor::sra(Reg8& reg)
+{
+    F_Carry = reg & 0b00000001;
+    reg >>= 1;
+    reg |= (reg & 0b01000000) << 1;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = reg == 0x00;
+}
+void Processor::sraAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+    F_Carry = value & 0b00000001;
+    value >>= 1;
+    value |= (value & 0b01000000) << 1;
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Zero = value == 0x00;
+    memory_bus->Write8(addr, value);
 }
 
 // bit
@@ -336,6 +432,17 @@ void Processor::swap(Reg8& reg)
     F_HalfCarry = false;
     F_Carry = false;
     F_Zero = reg == 0;
+}
+void Processor::swapAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+    value = ((value & 0x0F) << 4) | ((value & 0xF0) >> 4);
+
+    F_Subtract = false;
+    F_HalfCarry = false;
+    F_Carry = false;
+    F_Zero = value == 0;
+    memory_bus->Write8(addr, value);
 }
 
 // complement reg

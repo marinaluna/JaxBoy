@@ -128,17 +128,26 @@ public:
 
     // CB opcodes
     // rotate
-    void rlc(Reg8& reg, bool modifyFlags);
-    void rl(Reg8& reg, bool modifyFlags);
-    void rrc(Reg8& reg, bool modifyFlags);
-    void rr(Reg8& reg, bool modifyFlags);
+    void rlc(Reg8& reg, bool zero);
+    void rlcAt(u16 addr, bool zero);
+    void rl(Reg8& reg, bool zero);
+    void rlAt(u16 addr, bool zero);
+    void rrc(Reg8& reg, bool zero);
+    void rrcAt(u16 addr, bool zero);
+    void rr(Reg8& reg, bool zero);
+    void rrAt(u16 addr, bool zero);
     // shift
     void sla(Reg8& reg);
+    void slaAt(u16 addr);
     void srl(Reg8& reg);
+    void srlAt(u16 addr);
+    void sra(Reg8& reg);
+    void sraAt(u16 addr);
     // bit
     void bit(u8 byte, u8 bit);
     // swap
     void swap(Reg8& reg);
+    void swapAt(u16 addr);
     // cpl
     void cpl(Reg8& reg);
     // reset bit

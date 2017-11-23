@@ -822,35 +822,147 @@ u8 Processor::ExecuteCBOpcode()
 
     switch(opcode)
     {
+        // RLC reg8
+        case 0x00:    
+            rlc(reg_B, true); break;
+        case 0x01:    
+            rlc(reg_C, true); break;
+        case 0x02:    
+            rlc(reg_D, true); break;
+        case 0x03:    
+            rlc(reg_E, true); break;
+        case 0x04:    
+            rlc(reg_H, true); break;
+        case 0x05:    
+            rlc(reg_L, true); break;
+        case 0x06:    
+            rlcAt(reg_HL.word, true); break;
+        case 0x07:    
+            rlc(reg_A, true); break;
+
         // RL reg8
+        case 0x10:
+            rl(reg_B, true); break;
         case 0x11:
             rl(reg_C, true); break;
+        case 0x12:
+            rl(reg_D, true); break;
+        case 0x13:
+            rl(reg_E, true); break;
+        case 0x14:
+            rl(reg_H, true); break;
+        case 0x15:
+            rl(reg_L, true); break;
+        case 0x16:
+            rlAt(reg_HL.word, true); break;
+        case 0x17:
+            rl(reg_A, true); break;
+
+        // RRC reg8
+        case 0x08:
+            rrc(reg_B, true); break;
+        case 0x09:
+            rrc(reg_C, true); break;
+        case 0x0A:
+            rrc(reg_D, true); break;
+        case 0x0B:
+            rrc(reg_E, true); break;
+        case 0x0C:
+            rrc(reg_H, true); break;
+        case 0x0D:
+            rrc(reg_L, true); break;
+        case 0x0E:
+            rrcAt(reg_HL.word, true); break;
+        case 0x0F:
+            rrc(reg_A, true); break;
 
         // RR reg8
+        case 0x18:
+            rr(reg_B, true); break;
         case 0x19:
             rr(reg_C, true); break;
         case 0x1A:
             rr(reg_D, true); break;
-
-        // RRC reg8
-        case 0x09:
-            rrc(reg_C, true); break;
+        case 0x1B:
+            rr(reg_E, true); break;
+        case 0x1C:
+            rr(reg_H, true); break;
+        case 0x1D:
+            rr(reg_L, true); break;
+        case 0x1E:
+            rrAt(reg_HL.word, true); break;
+        case 0x1F:
+            rr(reg_A, true); break;
 
         // SLA reg8
+        case 0x20:
+            sla(reg_B); break;
+        case 0x21:
+            sla(reg_C); break;
+        case 0x22:
+            sla(reg_D); break;
         case 0x23:
             sla(reg_E); break;
+        case 0x24:
+            sla(reg_H); break;
+        case 0x25:
+            sla(reg_L); break;
+        case 0x26:
+            slaAt(reg_HL.word); break;
         case 0x27:
             sla(reg_A); break;
 
+        // SRA reg8
+        case 0x28:
+            sra(reg_B); break;
+        case 0x29:
+            sra(reg_C); break;
+        case 0x2A:
+            sra(reg_D); break;
+        case 0x2B:
+            sra(reg_E); break;
+        case 0x2C:
+            sra(reg_H); break;
+        case 0x2D:
+            sra(reg_L); break;
+        case 0x2E:
+            sraAt(reg_HL.word); break;
+        case 0x2F:
+            sra(reg_A); break;
+
         // SWAP reg8
+        case 0x30:
+            swap(reg_B); break;
+        case 0x31:
+            swap(reg_C); break;
+        case 0x32:
+            swap(reg_D); break;
         case 0x33:
             swap(reg_E); break;
+        case 0x34:
+            swap(reg_H); break;
+        case 0x35:
+            swap(reg_L); break;
+        case 0x36:
+            swapAt(reg_HL.word); break;
         case 0x37:
             swap(reg_A); break;
 
         // SRL reg8
         case 0x38:
             srl(reg_B); break;
+        case 0x39:
+            srl(reg_C); break;
+        case 0x3A:
+            srl(reg_D); break;
+        case 0x3B:
+            srl(reg_E); break;
+        case 0x3C:
+            srl(reg_H); break;
+        case 0x3D:
+            srl(reg_L); break;
+        case 0x3E:
+            srlAt(reg_HL.word); break;
         case 0x3F:
             srl(reg_A); break;
 
@@ -985,20 +1097,262 @@ u8 Processor::ExecuteCBOpcode()
             bit(reg_A, 7); break;
 
         // RES x, reg8
+        case 0x80:
+            res(reg_B, 0); break;
+        case 0x81:
+            res(reg_C, 0); break;
+        case 0x82:
+            res(reg_D, 0); break;
+        case 0x83:
+            res(reg_E, 0); break;
+        case 0x84:
+            res(reg_H, 0); break;
+        case 0x85:
+            res(reg_L, 0); break;
         case 0x86:
             resAt(reg_HL.word, 0); break;
         case 0x87:
             res(reg_A, 0); break;
+        case 0x88:
+            res(reg_B, 1); break;
+        case 0x89:
+            res(reg_C, 1); break;
+        case 0x8A:
+            res(reg_D, 1); break;
+        case 0x8B:
+            res(reg_E, 1); break;
+        case 0x8C:
+            res(reg_H, 1); break;
+        case 0x8D:
+            res(reg_L, 1); break;
+        case 0x8E:
+            resAt(reg_HL.word, 1); break;
+        case 0x8F:
+            res(reg_A, 1); break;
+        case 0x90:
+            res(reg_B, 2); break;
+        case 0x91:
+            res(reg_C, 2); break;
+        case 0x92:
+            res(reg_D, 2); break;
+        case 0x93:
+            res(reg_E, 2); break;
+        case 0x94:
+            res(reg_H, 2); break;
+        case 0x95:
+            res(reg_L, 2); break;
+        case 0x96:
+            resAt(reg_HL.word, 2); break;
+        case 0x97:
+            res(reg_A, 2); break;
+        case 0x98:
+            res(reg_B, 3); break;
+        case 0x99:
+            res(reg_C, 3); break;
+        case 0x9A:
+            res(reg_D, 3); break;
+        case 0x9B:
+            res(reg_E, 3); break;
+        case 0x9C:
+            res(reg_H, 3); break;
+        case 0x9D:
+            res(reg_L, 3); break;
+        case 0x9E:
+            resAt(reg_HL.word, 3); break;
+        case 0x9F:
+            res(reg_A, 3); break;
+        case 0xA0:
+            res(reg_B, 4); break;
+        case 0xA1:
+            res(reg_C, 4); break;
+        case 0xA2:
+            res(reg_D, 4); break;
+        case 0xA3:
+            res(reg_E, 4); break;
+        case 0xA4:
+            res(reg_H, 4); break;
+        case 0xA5:
+            res(reg_L, 4); break;
+        case 0xA6:
+            resAt(reg_HL.word, 4); break;
+        case 0xA7:
+            res(reg_A, 4); break;
+        case 0xA8:
+            res(reg_B, 5); break;
+        case 0xA9:
+            res(reg_C, 5); break;
+        case 0xAA:
+            res(reg_D, 5); break;
+        case 0xAB:
+            res(reg_E, 5); break;
+        case 0xAC:
+            res(reg_H, 5); break;
+        case 0xAD:
+            res(reg_L, 5); break;
+        case 0xAE:
+            resAt(reg_HL.word, 5); break;
+        case 0xAF:
+            res(reg_A, 5); break;
+        case 0xB0:
+            res(reg_B, 6); break;
+        case 0xB1:
+            res(reg_C, 6); break;
+        case 0xB2:
+            res(reg_D, 6); break;
+        case 0xB3:
+            res(reg_E, 6); break;
+        case 0xB4:
+            res(reg_H, 6); break;
+        case 0xB5:
+            res(reg_L, 6); break;
+        case 0xB6:
+            resAt(reg_HL.word, 6); break;
+        case 0xB7:
+            res(reg_A, 6); break;
+        case 0xB8:
+            res(reg_B, 7); break;
+        case 0xB9:
+            res(reg_C, 7); break;
+        case 0xBA:
+            res(reg_D, 7); break;
+        case 0xBB:
+            res(reg_E, 7); break;
+        case 0xBC:
+            res(reg_H, 7); break;
+        case 0xBD:
+            res(reg_L, 7); break;
         case 0xBE:
             resAt(reg_HL.word, 7); break;
         case 0xBF:
             res(reg_A, 7); break;
 
         // SET x, reg8
+        case 0xC0:
+            set(reg_B, 0); break;
+        case 0xC1:
+            set(reg_C, 0); break;
+        case 0xC2:
+            set(reg_D, 0); break;
+        case 0xC3:
+            set(reg_E, 0); break;
+        case 0xC4:
+            set(reg_H, 0); break;
+        case 0xC5:
+            set(reg_L, 0); break;
+        case 0xC6:
+            setAt(reg_HL.word, 0); break;
         case 0xC7:
             set(reg_A, 0); break;
+        case 0xC8:
+            set(reg_B, 1); break;
+        case 0xC9:
+            set(reg_C, 1); break;
+        case 0xCA:
+            set(reg_D, 1); break;
+        case 0xCB:
+            set(reg_E, 1); break;
+        case 0xCC:
+            set(reg_H, 1); break;
+        case 0xCD:
+            set(reg_L, 1); break;
+        case 0xCE:
+            setAt(reg_HL.word, 1); break;
+        case 0xCF:
+            set(reg_A, 1); break;
+        case 0xD0:
+            set(reg_B, 2); break;
+        case 0xD1:
+            set(reg_C, 2); break;
+        case 0xD2:
+            set(reg_D, 2); break;
+        case 0xD3:
+            set(reg_E, 2); break;
+        case 0xD4:
+            set(reg_H, 2); break;
+        case 0xD5:
+            set(reg_L, 2); break;
+        case 0xD6:
+            setAt(reg_HL.word, 2); break;
+        case 0xD7:
+            set(reg_A, 2); break;
+        case 0xD8:
+            set(reg_B, 3); break;
+        case 0xD9:
+            set(reg_C, 3); break;
+        case 0xDA:
+            set(reg_D, 3); break;
+        case 0xDB:
+            set(reg_E, 3); break;
+        case 0xDC:
+            set(reg_H, 3); break;
+        case 0xDD:
+            set(reg_L, 3); break;
         case 0xDE:
             setAt(reg_HL.word, 3); break;
+        case 0xDF:
+            set(reg_A, 3); break;
+        case 0xE0:
+            set(reg_B, 4); break;
+        case 0xE1:
+            set(reg_C, 4); break;
+        case 0xE2:
+            set(reg_D, 4); break;
+        case 0xE3:
+            set(reg_E, 4); break;
+        case 0xE4:
+            set(reg_H, 4); break;
+        case 0xE5:
+            set(reg_L, 4); break;
+        case 0xE6:
+            setAt(reg_HL.word, 4); break;
+        case 0xE7:
+            set(reg_A, 4); break;
+        case 0xE8:
+            set(reg_B, 5); break;
+        case 0xE9:
+            set(reg_C, 5); break;
+        case 0xEA:
+            set(reg_D, 5); break;
+        case 0xEB:
+            set(reg_E, 5); break;
+        case 0xEC:
+            set(reg_H, 5); break;
+        case 0xED:
+            set(reg_L, 5); break;
+        case 0xEE:
+            setAt(reg_HL.word, 5); break;
+        case 0xEF:
+            set(reg_A, 5); break;
+        case 0xF0:
+            set(reg_B, 6); break;
+        case 0xF1:
+            set(reg_C, 6); break;
+        case 0xF2:
+            set(reg_D, 6); break;
+        case 0xF3:
+            set(reg_E, 6); break;
+        case 0xF4:
+            set(reg_H, 6); break;
+        case 0xF5:
+            set(reg_L, 6); break;
+        case 0xF6:
+            setAt(reg_HL.word, 6); break;
+        case 0xF7:
+            set(reg_A, 6); break;
+        case 0xF8:
+            set(reg_B, 7); break;
+        case 0xF9:
+            set(reg_C, 7); break;
+        case 0xFA:
+            set(reg_D, 7); break;
+        case 0xFB:
+            set(reg_E, 7); break;
+        case 0xFC:
+            set(reg_H, 7); break;
+        case 0xFD:
+            set(reg_L, 7); break;
+        case 0xFE:
+            setAt(reg_HL.word, 7); break;
         case 0xFF:
             set(reg_A, 7); break;
 
