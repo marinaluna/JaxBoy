@@ -37,28 +37,28 @@ Only roms that have been tested are listed.
 | Castlelian                                | 🔵⚪️⚪️⚪️⚪️ |   Boots. Displays only alphabet on screen. |
 | Castlevania Adventure                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Catrap                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
-| Centipede                                 | 🔵⚪️⚪️⚪️⚪️ |   Cycles through splash screens, then crashes. |
-| Crystal Quest                             | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Centipede                                 | 🔵⚪️⚪️⚪️⚪️ |   Cycles through splash screens and plays demo, with severe graphical errors. |
+| Crystal Quest                             | 🔵🔵️⚪️⚪️⚪️ |   Boots and plays demo without graphical errors. |
 | Donkey Kong                               | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Dr. Mario                                 | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, but then hangs. |
-| Dropzone                                  | 🔵⚪️⚪️⚪️⚪️ |   Briefly animates title screen, then crashes. |
+| Dropzone                                  | 🔵🔵️⚪️⚪️⚪️ |   Boots to title screen and cycles through screens with minor graphical errors. |
 | Flipull                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
 | Game of Harmony, The                      | 🔵⚪️⚪️⚪️⚪️ |   Flips through a series of screens, then crashes. Has graphical errors. |
 | Gameboy Gallery                           | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, then crashes. |
-| Kwirk                                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Kwirk                                     | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen without graphical errors. |
 | Legend of Zelda: Link's Awakening, The    | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Loopz                                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Missile Command                           | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, but crashes during demo. Severe graphical errors. |
+| Missile Command                           | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen and plays demo. |
 | Motocross Maniacs                         | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | NFL Football                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Othello                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, with minor graphical errors. |
-| Palamedes                                 | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
+| Palamedes                                 | 🔵🔵️⚪️⚪️⚪️ |   Boots to title screen. |
 | Pipe Dream                                | 🔵🔵️⚪️⚪️⚪️ |   Cycles through splash screens and boots to title screen. |
 | Pokemon Blue                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Pop Up                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
 | Q Billion                                 | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Serpent                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen, then crashes. |
-| Shanghai                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
+| Serpent                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen and plays demo, with severe graphical errors. |
+| Shanghai                                  | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen without graphical errors. |
 | Spot                                      | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen and plays demo. Graphical errors. |
 | Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
 | Tasmania Story                            | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |

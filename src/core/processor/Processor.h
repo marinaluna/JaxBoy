@@ -150,6 +150,9 @@ public:
     void swapAt(u16 addr);
     // cpl
     void cpl(Reg8& reg);
+    void ccf();
+    // set carry
+    void scf();
     // reset bit
     void res(Reg8& reg, u8 bit);
     void resAt(u16 addr, u8 bit);

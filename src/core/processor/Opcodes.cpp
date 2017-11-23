@@ -452,6 +452,20 @@ void Processor::cpl(Reg8& reg)
     F_Subtract = true;
     F_HalfCarry = true;
 }
+void Processor::ccf()
+{
+    F_Carry = !F_Carry;
+    F_Subtract = false;
+    F_HalfCarry = false;
+}
+
+// set carry
+void Processor::scf()
+{
+    F_Carry = true;
+    F_Subtract = false;
+    F_HalfCarry = false;
+}
 
 // reset bit
 void Processor::res(Reg8& reg, u8 bit)

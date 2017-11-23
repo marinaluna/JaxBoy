@@ -557,8 +557,16 @@ int Processor::ExecuteNext()
             xor8(reg_A, reg_A); break;
         case 0xEE:
             xor8(reg_A, GetOperand8()); break;
+        
+        // CPL
         case 0x2F:
             cpl(reg_A); break;
+        // CCF
+        case 0x3F:
+            ccf(); break;
+        // SCF
+        case 0x37:
+            scf(); break;
 
         // OR reg8, u8
         case 0xB0:
