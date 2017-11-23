@@ -19,6 +19,4 @@
 // constants
 extern const char* gAppName;
 
-// converts bit position to maskable bit sequence
-extern u8 gBitMasks[8];
 extern const Color gColors[4];

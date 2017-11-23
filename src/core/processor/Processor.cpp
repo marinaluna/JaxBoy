@@ -151,7 +151,7 @@ u16 Processor::GetOperand16()
 
 // Decodes and executes instruction
 int Processor::ExecuteNext()
-{    
+{
     u8 opcode = memory_bus->Read8(reg_PC.word++);
     bool branch_taken = false;
     // the table to look for opcode information in
@@ -182,193 +182,193 @@ int Processor::ExecuteNext()
         
         // LD reg8, u8
         case 0x06:
-            ld_reg(reg_B, GetOperand8()); break;
+            ld(reg_B, GetOperand8()); break;
         case 0x0E:
-            ld_reg(reg_C, GetOperand8()); break;
+            ld(reg_C, GetOperand8()); break;
         case 0x16:
-            ld_reg(reg_D, GetOperand8()); break;
+            ld(reg_D, GetOperand8()); break;
         case 0x1E:
-            ld_reg(reg_E, GetOperand8()); break;
+            ld(reg_E, GetOperand8()); break;
         case 0x26:
-            ld_reg(reg_H, GetOperand8()); break;
+            ld(reg_H, GetOperand8()); break;
         case 0x2E:
-            ld_reg(reg_L, GetOperand8()); break;
+            ld(reg_L, GetOperand8()); break;
         case 0x3E:
-            ld_reg(reg_A, GetOperand8()); break;
+            ld(reg_A, GetOperand8()); break;
         case 0x0A:
-            ld_reg(reg_A, memory_bus->Read8(reg_BC.word)); break;
+            ld(reg_A, memory_bus->Read8(reg_BC.word)); break;
         case 0x1A:
-            ld_reg(reg_A, memory_bus->Read8(reg_DE.word)); break;
+            ld(reg_A, memory_bus->Read8(reg_DE.word)); break;
         case 0x2A:
-            ld_reg(reg_A, memory_bus->Read8(reg_HL.word++)); break;
+            ld(reg_A, memory_bus->Read8(reg_HL.word++)); break;
         case 0x3A:
-            ld_reg(reg_A, memory_bus->Read8(reg_HL.word--)); break;
+            ld(reg_A, memory_bus->Read8(reg_HL.word--)); break;
         case 0x46:
-            ld_reg(reg_B, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_B, memory_bus->Read8(reg_HL.word)); break;
         case 0x4E:
-            ld_reg(reg_C, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_C, memory_bus->Read8(reg_HL.word)); break;
         case 0x56:
-            ld_reg(reg_D, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_D, memory_bus->Read8(reg_HL.word)); break;
         case 0x5E:
-            ld_reg(reg_E, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_E, memory_bus->Read8(reg_HL.word)); break;
         case 0x66:
-            ld_reg(reg_H, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_H, memory_bus->Read8(reg_HL.word)); break;
         case 0x6E:
-            ld_reg(reg_L, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_L, memory_bus->Read8(reg_HL.word)); break;
         case 0x7E:
-            ld_reg(reg_A, memory_bus->Read8(reg_HL.word)); break;
+            ld(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0xF0:
-            ld_reg(reg_A, memory_bus->Read8(0xFF00 + GetOperand8())); break;
+            ld(reg_A, memory_bus->Read8(0xFF00 + GetOperand8())); break;
         case 0xF2:
-            ld_reg(reg_A, memory_bus->Read8(0xFF00 + reg_C)); break;
+            ld(reg_A, memory_bus->Read8(0xFF00 + reg_C)); break;
         case 0xFA:
-            ld_reg(reg_A, memory_bus->Read8(GetOperand16())); break;
+            ld(reg_A, memory_bus->Read8(GetOperand16())); break;
         case 0x40:
-            ld_reg(reg_B, reg_B); break;
+            ld(reg_B, reg_B); break;
         case 0x41:
-            ld_reg(reg_B, reg_C); break;
+            ld(reg_B, reg_C); break;
         case 0x42:
-            ld_reg(reg_B, reg_D); break;
+            ld(reg_B, reg_D); break;
         case 0x43:
-            ld_reg(reg_B, reg_E); break;
+            ld(reg_B, reg_E); break;
         case 0x44:
-            ld_reg(reg_B, reg_H); break;
+            ld(reg_B, reg_H); break;
         case 0x45:
-            ld_reg(reg_B, reg_L); break;
+            ld(reg_B, reg_L); break;
         case 0x47:
-            ld_reg(reg_B, reg_A); break;
+            ld(reg_B, reg_A); break;
         case 0x48:
-            ld_reg(reg_C, reg_B); break;
+            ld(reg_C, reg_B); break;
         case 0x49:
-            ld_reg(reg_C, reg_C); break;
+            ld(reg_C, reg_C); break;
         case 0x4A:
-            ld_reg(reg_C, reg_D); break;
+            ld(reg_C, reg_D); break;
         case 0x4B:
-            ld_reg(reg_C, reg_E); break;
+            ld(reg_C, reg_E); break;
         case 0x4C:
-            ld_reg(reg_C, reg_H); break;
+            ld(reg_C, reg_H); break;
         case 0x4D:
-            ld_reg(reg_C, reg_L); break;
+            ld(reg_C, reg_L); break;
         case 0x4F:
-            ld_reg(reg_C, reg_A); break;
+            ld(reg_C, reg_A); break;
         case 0x50:
-            ld_reg(reg_D, reg_B); break;
+            ld(reg_D, reg_B); break;
         case 0x51:
-            ld_reg(reg_D, reg_C); break;
+            ld(reg_D, reg_C); break;
         case 0x52:
-            ld_reg(reg_D, reg_D); break;
+            ld(reg_D, reg_D); break;
         case 0x53:
-            ld_reg(reg_D, reg_E); break;
+            ld(reg_D, reg_E); break;
         case 0x54:
-            ld_reg(reg_D, reg_H); break;
+            ld(reg_D, reg_H); break;
         case 0x55:
-            ld_reg(reg_D, reg_L); break;
+            ld(reg_D, reg_L); break;
         case 0x57:
-            ld_reg(reg_D, reg_A); break;
+            ld(reg_D, reg_A); break;
         case 0x58:
-            ld_reg(reg_E, reg_B); break;
+            ld(reg_E, reg_B); break;
         case 0x59:
-            ld_reg(reg_E, reg_C); break;
+            ld(reg_E, reg_C); break;
         case 0x5A:
-            ld_reg(reg_E, reg_D); break;
+            ld(reg_E, reg_D); break;
         case 0x5B:
-            ld_reg(reg_E, reg_E); break;
+            ld(reg_E, reg_E); break;
         case 0x5C:
-            ld_reg(reg_E, reg_H); break;
+            ld(reg_E, reg_H); break;
         case 0x5D:
-            ld_reg(reg_E, reg_L); break;
+            ld(reg_E, reg_L); break;
         case 0x5F:
-            ld_reg(reg_E, reg_A); break;
+            ld(reg_E, reg_A); break;
         case 0x60:
-            ld_reg(reg_H, reg_B); break;
+            ld(reg_H, reg_B); break;
         case 0x61:
-            ld_reg(reg_H, reg_C); break;
+            ld(reg_H, reg_C); break;
         case 0x62:
-            ld_reg(reg_H, reg_D); break;
+            ld(reg_H, reg_D); break;
         case 0x63:
-            ld_reg(reg_H, reg_E); break;
+            ld(reg_H, reg_E); break;
         case 0x64:
-            ld_reg(reg_H, reg_H); break;
+            ld(reg_H, reg_H); break;
         case 0x65:
-            ld_reg(reg_H, reg_L); break;
+            ld(reg_H, reg_L); break;
         case 0x67:
-            ld_reg(reg_H, reg_A); break;
+            ld(reg_H, reg_A); break;
         case 0x68:
-            ld_reg(reg_L, reg_B); break;
+            ld(reg_L, reg_B); break;
         case 0x69:
-            ld_reg(reg_L, reg_C); break;
+            ld(reg_L, reg_C); break;
         case 0x6A:
-            ld_reg(reg_L, reg_D); break;
+            ld(reg_L, reg_D); break;
         case 0x6B:
-            ld_reg(reg_L, reg_E); break;
+            ld(reg_L, reg_E); break;
         case 0x6C:
-            ld_reg(reg_L, reg_H); break;
+            ld(reg_L, reg_H); break;
         case 0x6D:
-            ld_reg(reg_L, reg_L); break;
+            ld(reg_L, reg_L); break;
         case 0x6F:
-            ld_reg(reg_L, reg_A); break;
+            ld(reg_L, reg_A); break;
         case 0x78:
-            ld_reg(reg_A, reg_B); break;
+            ld(reg_A, reg_B); break;
         case 0x79:
-            ld_reg(reg_A, reg_C); break;
+            ld(reg_A, reg_C); break;
         case 0x7A:
-            ld_reg(reg_A, reg_D); break;
+            ld(reg_A, reg_D); break;
         case 0x7B:
-            ld_reg(reg_A, reg_E); break;
+            ld(reg_A, reg_E); break;
         case 0x7C:
-            ld_reg(reg_A, reg_H); break;
+            ld(reg_A, reg_H); break;
         case 0x7D:
-            ld_reg(reg_A, reg_L); break;
+            ld(reg_A, reg_L); break;
         case 0x7F:
-            ld_reg(reg_A, reg_A); break;
+            ld(reg_A, reg_A); break;
         // LD reg16, u16
         case 0x01:
-            ld_reg(reg_BC, GetOperand16()); break;
+            ld(reg_BC, GetOperand16()); break;
         case 0x11:
-            ld_reg(reg_DE, GetOperand16()); break;
+            ld(reg_DE, GetOperand16()); break;
         case 0x21:
-            ld_reg(reg_HL, GetOperand16()); break;
+            ld(reg_HL, GetOperand16()); break;
         case 0x31:
-            ld_reg(reg_SP, GetOperand16()); break;
+            ld(reg_SP, GetOperand16()); break;
         case 0xF8:
-            ld_reg(reg_HL, reg_SP.word + static_cast<s8>(GetOperand8())); break;
+            ld(reg_HL, reg_SP.word + static_cast<s8>(GetOperand8())); break;
         case 0xF9:
-            ld_reg(reg_SP, reg_HL.word); break;
+            ld(reg_SP, reg_HL.word); break;
 
         // LD (addr), u8
         case 0x02:
-            ld_addr(reg_BC.word, reg_A); break;
+            ldAt(reg_BC.word, reg_A); break;
         case 0x12:
-            ld_addr(reg_DE.word, reg_A); break;
+            ldAt(reg_DE.word, reg_A); break;
         case 0x22:
-            ld_addr(reg_HL.word++, reg_A); break;
+            ldAt(reg_HL.word++, reg_A); break;
         case 0x32:
-            ld_addr(reg_HL.word--, reg_A); break;
+            ldAt(reg_HL.word--, reg_A); break;
         case 0x36:
-            ld_addr(reg_HL.word, GetOperand8()); break;
+            ldAt(reg_HL.word, GetOperand8()); break;
         case 0x70:
-            ld_addr(reg_HL.word, reg_B); break;
+            ldAt(reg_HL.word, reg_B); break;
         case 0x71:
-            ld_addr(reg_HL.word, reg_C); break;
+            ldAt(reg_HL.word, reg_C); break;
         case 0x72:
-            ld_addr(reg_HL.word, reg_D); break;
+            ldAt(reg_HL.word, reg_D); break;
         case 0x73:
-            ld_addr(reg_HL.word, reg_E); break;
+            ldAt(reg_HL.word, reg_E); break;
         case 0x74:
-            ld_addr(reg_HL.word, reg_H); break;
+            ldAt(reg_HL.word, reg_H); break;
         case 0x75:
-            ld_addr(reg_HL.word, reg_L); break;
+            ldAt(reg_HL.word, reg_L); break;
         case 0x77:
-            ld_addr(reg_HL.word, reg_A); break;
+            ldAt(reg_HL.word, reg_A); break;
         case 0xE0:
-            ld_addr(0xFF00 + GetOperand8(), reg_A); break;
+            ldAt(0xFF00 + GetOperand8(), reg_A); break;
         case 0xE2:
-            ld_addr(0xFF00 + reg_C, reg_A); break;
+            ldAt(0xFF00 + reg_C, reg_A); break;
         case 0xEA:
-            ld_addr(GetOperand16(), reg_A); break;
+            ldAt(GetOperand16(), reg_A); break;
         // LD (addr), u16
         case 0x08:
-            ld_addr(GetOperand16(), reg_SP.word); break;
+            ldAt(GetOperand16(), reg_SP.word); break;
 
         // INC reg8
         case 0x04:
@@ -396,7 +396,7 @@ int Processor::ExecuteNext()
             inc(reg_SP); break;
         // INC (HL)
         case 0x34:
-            memory_bus->Write8(reg_HL.word, memory_bus->Read8(reg_HL.word) + 1); break;
+            incAt(reg_HL.word); break;
 
         // DEC reg8
         case 0x05:
@@ -424,7 +424,7 @@ int Processor::ExecuteNext()
             dec(reg_SP); break;
         // DEC (HL)
         case 0x35:
-            memory_bus->Write8(reg_HL.word, memory_bus->Read8(reg_HL.word) - 1); break;
+            decAt(reg_HL.word); break;
 
         // ADD reg8, u8
         case 0x80:
@@ -472,7 +472,7 @@ int Processor::ExecuteNext()
         case 0x8D:
             adc(reg_A, reg_L); break;
         case 0x8E:
-            adc(reg_A, memory_bus->Read8(GetOperand8())); break;
+            adc(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0x8F:
             adc(reg_A, reg_A); break;
         case 0xCE:
@@ -492,7 +492,7 @@ int Processor::ExecuteNext()
         case 0x95:
             sub(reg_A, reg_L); break;
         case 0x96:
-            sub(reg_A, memory_bus->Read8(GetOperand8())); break;
+            sub(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0x97:
             sub(reg_A, reg_A); break;
         case 0xD6:
@@ -512,7 +512,7 @@ int Processor::ExecuteNext()
         case 0x9D:
             sbc(reg_A, reg_L); break;
         case 0x9E:
-            sbc(reg_A, memory_bus->Read8(GetOperand8())); break;
+            sbc(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0x9F:
             sbc(reg_A, reg_A); break;
         case 0xDE:
@@ -532,7 +532,7 @@ int Processor::ExecuteNext()
         case 0xA5:
             and8(reg_A, reg_L); break;
         case 0xA6:
-            and8(reg_A, memory_bus->Read8(GetOperand8())); break;
+            and8(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0xA7:
             and8(reg_A, reg_A); break;
         case 0xE6:
@@ -552,13 +552,13 @@ int Processor::ExecuteNext()
         case 0xAD:
             xor8(reg_A, reg_L); break;
         case 0xAE:
-            xor8(reg_A, memory_bus->Read8(GetOperand8())); break;
+            xor8(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0xAF:
             xor8(reg_A, reg_A); break;
         case 0xEE:
             xor8(reg_A, GetOperand8()); break;
         case 0x2F:
-            xor8(reg_A, 0xFF); break;
+            cpl(reg_A); break;
 
         // OR reg8, u8
         case 0xB0:
@@ -574,7 +574,7 @@ int Processor::ExecuteNext()
         case 0xB5:
             or8(reg_A, reg_L); break;
         case 0xB6:
-            or8(reg_A, memory_bus->Read8(GetOperand8())); break;
+            or8(reg_A, memory_bus->Read8(reg_HL.word)); break;
         case 0xB7:
             or8(reg_A, reg_A); break;
         case 0xF6:
@@ -837,6 +837,8 @@ u8 Processor::ExecuteCBOpcode()
             sla(reg_A); break;
 
         // SWAP reg8
+        case 0x33:
+            swap(reg_E); break;
         case 0x37:
             swap(reg_A); break;
 
@@ -977,10 +979,12 @@ u8 Processor::ExecuteCBOpcode()
             bit(reg_A, 7); break;
 
         // RES x, reg8
+        case 0x86:
+            resAt(reg_HL.word, 0); break;
         case 0x87:
             res(reg_A, 0); break;
         case 0xBE:
-            res_addr(reg_HL.word, 7); break;
+            resAt(reg_HL.word, 7); break;
         case 0xBF:
             res(reg_A, 7); break;
 

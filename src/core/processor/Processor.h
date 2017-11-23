@@ -16,8 +16,6 @@
 
 #include "../../common/Types.h"
 
-//#include "../../debug/Logger.h"
-
 #include <memory>
 
 
@@ -92,15 +90,17 @@ public:
 
     // Instructions
     // load
-    void ld_reg(Reg8& reg, u8 value);
-    void ld_reg(Reg16& reg, u16 value);
-    void ld_addr(u16 addr, u8 value);
-    void ld_addr(u16 addr, u16 value);
+    void ld(Reg8& reg, u8 value);
+    void ld(Reg16& reg, u16 value);
+    void ldAt(u16 addr, u8 value);
+    void ldAt(u16 addr, u16 value);
     // inc/dec
     void inc(Reg8& reg);
     void inc(Reg16& reg16);
+    void incAt(u16 addr);
     void dec(Reg8& reg);
     void dec(Reg16& reg16);
+    void decAt(u16 addr);
     // add
     void add(Reg8& reg, u8 value);
     void add(Reg16& reg, u16 value);
@@ -139,9 +139,11 @@ public:
     void bit(u8 byte, u8 bit);
     // swap
     void swap(Reg8& reg);
+    // cpl
+    void cpl(Reg8& reg);
     // reset bit
     void res(Reg8& reg, u8 bit);
-    void res_addr(u16 addr, u8 bit);
+    void resAt(u16 addr, u8 bit);
     // set bit
     void set(Reg8& reg, u8 bit);
 };

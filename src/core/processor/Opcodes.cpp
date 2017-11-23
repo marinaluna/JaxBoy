@@ -21,21 +21,21 @@
 namespace Core {
 
 // load
-void Processor::ld_reg(Reg8& reg, u8 value)
+void Processor::ld(Reg8& reg, u8 value)
 {
     reg = value;
 }
-void Processor::ld_reg(Reg16& reg, u16 value)
+void Processor::ld(Reg16& reg, u16 value)
 {
     reg.word = value;
 }
 
 // write
-void Processor::ld_addr(u16 addr, u8 value)
+void Processor::ldAt(u16 addr, u8 value)
 {
     memory_bus->Write8(addr, value);
 }
-void Processor::ld_addr(u16 addr, u16 value)
+void Processor::ldAt(u16 addr, u16 value)
 {
     memory_bus->Write16(addr, value);
 }
@@ -44,7 +44,7 @@ void Processor::ld_addr(u16 addr, u16 value)
 void Processor::inc(Reg8& reg)
 {
     F_Subtract = false;
-    F_HalfCarry = (reg & 0x0F) + 1 > 0x0F;
+    F_HalfCarry = (reg & 0x0F) == 0x0F;
     ++reg;
 
     F_Zero = reg == 0x00;
@@ -53,11 +53,22 @@ void Processor::inc(Reg16& reg16)
 {
     ++reg16.word;
 }
+void Processor::incAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+
+    F_Subtract = false;
+    F_HalfCarry = (value & 0x0F) == 0x0F;
+    
+    memory_bus->Write8(addr, ++value);
+
+    F_Zero = value == 0x00;
+}
 
 void Processor::dec(Reg8& reg)
 {
     F_Subtract = true;
-    F_HalfCarry = (reg & 0x0F) < 1;
+    F_HalfCarry = (reg & 0x0F) == 0x00;
     --reg;
 
     F_Zero = reg == 0x00;
@@ -66,40 +77,52 @@ void Processor::dec(Reg16& reg16)
 {
     --reg16.word;
 }
+void Processor::decAt(u16 addr)
+{
+    u8 value = memory_bus->Read8(addr);
+    
+    F_Subtract = true;
+    F_HalfCarry = (value & 0x0F) == 0x00;
+
+    memory_bus->Write8(addr, --value);
+
+    F_Zero = value == 0x00;
+}
 
 // add
 void Processor::add(Reg8& reg, u8 value)
 {
+    u16 tempAdd = reg + value;
     F_Subtract = false;
-    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F)) > 0x0F;
-    F_Carry = (reg + value) > 0xFF;
-    reg += value;
-
-    F_Zero = reg == 0x00;
+    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F)) & 0x10;
+    F_Carry = tempAdd & 0x0100;
+    F_Zero = (tempAdd & 0x00FF) == 0x00;
+    reg = static_cast<u8>(tempAdd);
 }
 void Processor::add(Reg16& reg, u16 value)
 {
     F_Subtract = false;
-    F_HalfCarry = ((reg.word & 0x0F00) + (value & 0x0F00)) > 0x0F00;
-    F_Carry = (reg.word + value) > 0xFFFF;
+    F_HalfCarry = ((reg.word & 0x0FFF) + (value & 0x0FFF)) & 0x1000;
+    F_Carry = value > (0xFFFF - reg.word);
     reg.word += value;
 }
 void Processor::add(Reg16& reg, s8 value)
 {
+    u16 tempAdd = (reg.word & 0x00FF) + static_cast<u8>(value);
     F_Subtract = false;
     F_Zero = false;
-    // TODO: HalfCarry and Carry
-    reg.word = reg.word + value;
+    F_HalfCarry = ((reg.word & 0x000F) + (static_cast<u8>(value) & 0x0F)) & 0x0010;
+    F_Carry = tempAdd & 0x0100;
+    reg.word = tempAdd;
 }
 void Processor::adc(Reg8& reg, u8 value)
 {
-    u8 adder = F_Carry? 1 : 0;
+    u16 tempAdd = reg + value + F_Carry;
     F_Subtract = false;
-    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F) + adder) > 0x0F;
-    F_Carry = (reg + value + adder > 0xFF);
-    reg += value + adder;
-
-    F_Zero = reg == 0x00;
+    F_HalfCarry = ((reg & 0x0F) + (value & 0x0F) + F_Carry) & 0x10;
+    F_Carry = tempAdd & 0x0100;
+    F_Zero = (tempAdd & 0x00FF) == 0x00;
+    reg = tempAdd & 0x00FF;
 }
 
 // sub
@@ -118,7 +141,7 @@ void Processor::sbc(Reg8& reg, u8 value)
     F_Subtract = true;
     F_HalfCarry = (reg & 0x0F) < ((value & 0x0F) + adder);
     F_Carry = reg < (value + adder);
-    reg -= value - ((F_Carry)? 1 : 0);
+    reg -= value + adder;
 
     F_Zero = reg == 0x00;
 }
@@ -170,14 +193,14 @@ void Processor::daa()
     }
     else
     {
+        if(F_HalfCarry || (reg_A & 0x0F) > 0x09)
+        {
+            reg_A += 0x06;
+        }
         if(F_Carry || reg_A > 0x99)
         {
             reg_A += 0x60;
             F_Carry = true;
-        }
-        if(F_HalfCarry || (reg_A & 0x0F) > 0x09)
-        {
-            reg_A += 0x06;
         }
     }
     F_Zero = reg_A == 0x00;
@@ -233,9 +256,9 @@ void Processor::pop(Reg16& reg16)
 // The CB versions of these instructions modify Zero
 void Processor::rlc(Reg8& reg, bool modifyFlags)
 {
-    bool newCarry = (reg & 0b10000000) != 0;
+    bool newCarry = reg & 0b10000000;
     reg <<= 1;
-    reg |= (newCarry? 1 : 0);
+    reg |= newCarry;
     F_Carry = newCarry;
 
     F_Subtract = false;
@@ -244,9 +267,9 @@ void Processor::rlc(Reg8& reg, bool modifyFlags)
 }
 void Processor::rl(Reg8& reg, bool modifyFlags)
 {
-    bool newCarry = (reg & 0b10000000) != 0;
+    bool newCarry = reg & 0b10000000;
     reg <<= 1;
-    reg |= (F_Carry? 1 : 0);
+    reg |= F_Carry;
     F_Carry = newCarry;
 
     F_Subtract = false;
@@ -255,9 +278,9 @@ void Processor::rl(Reg8& reg, bool modifyFlags)
 }
 void Processor::rrc(Reg8& reg, bool modifyFlags)
 {
-    bool newCarry = (reg & 0b00000001) != 0;
+    bool newCarry = reg & 0b00000001;
     reg >>= 1;
-    reg |= (newCarry? 0b10000000 : 0);
+    reg |= newCarry << 7;
     F_Carry = newCarry;
 
     F_Subtract = false;
@@ -266,9 +289,9 @@ void Processor::rrc(Reg8& reg, bool modifyFlags)
 }
 void Processor::rr(Reg8& reg, bool modifyFlags)
 {
-    bool newCarry = (reg & 0b00000001) != 0;
+    bool newCarry = reg & 0b00000001;
     reg >>= 1;
-    reg |= (F_Carry? 0b10000000 : 0);
+    reg |= F_Carry << 7;
     F_Carry = newCarry;
 
     F_Subtract = false;
@@ -279,7 +302,7 @@ void Processor::rr(Reg8& reg, bool modifyFlags)
 // shift
 void Processor::sla(Reg8& reg)
 {
-    F_Carry = (reg & 0b10000000) != 0;
+    F_Carry = reg & 0b10000000;
     reg <<= 1;
 
     F_Subtract = false;
@@ -288,9 +311,8 @@ void Processor::sla(Reg8& reg)
 }
 void Processor::srl(Reg8& reg)
 {
-    bool newCarry = (reg & 0b0000001) != 0;
+    F_Carry = reg & 0b00000001;
     reg >>= 1;
-    F_Carry = newCarry;
 
     F_Subtract = false;
     F_HalfCarry = false;
@@ -302,13 +324,13 @@ void Processor::bit(u8 byte, u8 bit)
 {
     F_Subtract = false;
     F_HalfCarry = true;
-    F_Zero = (byte & gBitMasks[bit]) == 0;
+    F_Zero = (byte & (0x1 << bit)) == 0;
 }
 
 // swap
 void Processor::swap(Reg8& reg)
 {
-    reg = ((reg & 0xFF) << 8) | ((reg & 0xFF00) >> 8);
+    reg = ((reg & 0x0F) << 4) | ((reg & 0xF0) >> 4);
 
     F_Subtract = false;
     F_HalfCarry = false;
@@ -316,20 +338,28 @@ void Processor::swap(Reg8& reg)
     F_Zero = reg == 0;
 }
 
+// complement reg
+void Processor::cpl(Reg8& reg)
+{
+    reg = ~reg;
+    F_Subtract = true;
+    F_HalfCarry = true;
+}
+
 // reset bit
 void Processor::res(Reg8& reg, u8 bit)
 {
-    reg &= ~gBitMasks[bit];
+    reg &= ~(0x1 << bit);
 }
-void Processor::res_addr(u16 addr, u8 bit)
+void Processor::resAt(u16 addr, u8 bit)
 {
-    memory_bus->Write8(addr, memory_bus->Read8(addr) & ~gBitMasks[bit]);
+    memory_bus->Write8(addr, memory_bus->Read8(addr) & ~(0x1 << bit));
 }
 
 // set bit
 void Processor::set(Reg8& reg, u8 bit)
 {
-    reg |= gBitMasks[bit];
+    reg |= (0x1 << bit);
 }
 
 }; // namespace Core
