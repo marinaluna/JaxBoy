@@ -46,6 +46,9 @@ public:
 
     std::vector<u8>& GetBytes()
         { return bytes; }
+
+    u8 GetCartType()
+        { return header.CartType; }
 };
 
 }; // namespace Core

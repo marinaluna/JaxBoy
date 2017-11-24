@@ -13,32 +13,52 @@
 // limitations under the License.
 
 #pragma once
-
-#include "MemoryController.h"
+#include "../../../common/Types.h"
 
 #include <memory>
+#include <vector>
 
 
 namespace Core {
     class GameBoy;
-} // namespace Core
+}; // namespace Core
 
 namespace Memory {
 
-class SystemMemoryController
-: public MemoryController
+class MemoryPage
 {
-    // System memory pages
-    std::unique_ptr<MemoryPage> PageROM;
-    std::unique_ptr<MemoryPage> PageVRAM;
-    std::unique_ptr<MemoryPage> PageSRAM;
-    std::unique_ptr<MemoryPage> PageWRAM;
-    std::unique_ptr<MemoryPage> PageOAM;
-    std::unique_ptr<MemoryPage> PageHighRAM;
-    std::unique_ptr<MemoryPage>& GetPage(u16 address);
+    u16 base;
+    u32 size;
+    std::vector<u8> bytes;
+public:
+    MemoryPage(u16 base, u32 size)
+    : base(base),
+      size(size),
+      bytes(size) {}
+
+    u16 GetBase() { return base; }
+    u32 GetSize() { return size; }
+    std::vector<u8>& GetBytes() { return bytes; }
+    u8* GetRaw() { return bytes.data(); }
+};
+
+class MBC
+{
+protected:
+    Core::GameBoy* gameboy;
+
+    std::unique_ptr<MemoryPage> romBank0;
+    std::unique_ptr<MemoryPage> romBank1;
+    std::unique_ptr<MemoryPage> vram;
+    std::unique_ptr<MemoryPage> sram;
+    std::unique_ptr<MemoryPage> wram;
+    std::unique_ptr<MemoryPage> oam;
+    std::unique_ptr<MemoryPage> highRam;
 
 public:
-    SystemMemoryController(Core::GameBoy* gameboy);
+    MBC(Core::GameBoy* gameboy);
+
+    virtual std::unique_ptr<MemoryPage>& GetPage(u16 address);
 
     virtual void Write8(u16 address, u8 data);
     virtual void Write16(u16 address, u16 data);

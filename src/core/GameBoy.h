@@ -22,7 +22,6 @@
 
 namespace Memory {
     class MemoryBus;
-    class IORegisterMemoryController;
 }; // namespace Memory
 
 namespace Core {
@@ -55,7 +54,7 @@ public:
         { return game_rom; };
 
 private:
-    friend class Memory::IORegisterMemoryController;
+    friend class Memory::MemoryBus;
 
     // Options configuration
     GameBoy::Options _Options;

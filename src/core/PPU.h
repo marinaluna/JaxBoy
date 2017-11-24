@@ -22,7 +22,6 @@
 
 namespace Memory {
     class MemoryBus;
-    class IORegisterMemoryController;
 }; // namespace Memory
 
 namespace Graphics {
@@ -85,7 +84,7 @@ class GameBoy;
 
 class PPU
 {
-    friend class Memory::IORegisterMemoryController;
+    friend class Memory::MemoryBus;
     // IO Registers
     // LCD controller
     u8 LCDC;

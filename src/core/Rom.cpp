@@ -58,10 +58,7 @@ Rom::Rom(const std::vector<u8>& bytes)
     //     12 - MBC3 + RAM                      FE - HuC3
     //     13 - MBC3 + RAM + BATTERY            FF - HuC1 + RAM + BATTERY
     header.CartType = bytes.at(0x147);
-    if(header.CartType != 0x00)
-    {
-        LOG_WARN("Unsupported cart type!");
-    }
+    //LOG_MSG("Cart type " + header.CartType);
 }
 
 }; // namespace Core

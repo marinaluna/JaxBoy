@@ -13,92 +13,193 @@
 // limitations under the License.
 
 #include "MemoryBus.h"
-#include "../GameBoy.h"
-#include "../Rom.h"
 
-#include "controller/SystemMemoryController.h"
-#include "controller/IORegisterMemoryController.h"
+#include "mbc/MBC.h"
+
+#include "../GameBoy.h"
+#include "../PPU.h"
+#include "../Rom.h"
+#include "../processor/Processor.h"
+
+#include "../../common/Globals.h"
+
+
+static bool CheckBounds8(u16 address)
+{
+    if((address >= 0xE000 && address <= 0xFDFF) ||
+       (address >= 0xFEA0 && address <= 0xFEFF))
+        return false;
+
+    return true;
+}
+static bool CheckBounds16(u16 address)
+{
+    if((address >= 0xE000 && address <= 0xFDFF) ||
+       (address+1 >= 0xE000 && address+1 <= 0xFDFF) ||
+       (address >= 0xFEA0 && address <= 0xFEFF) ||
+       (address+1 >= 0xFEA0 && address+1 <= 0xFEFF))
+        return false;
+
+    return true;
+}
 
 
 namespace Memory {
 
-MemoryBus::MemoryBus(Core::GameBoy* gameboy)
-:
-    gameboy (gameboy),
-
-    // Initialize system memory controllers
-    defaultMemoryController (new SystemMemoryController(gameboy)),
-    ioMemoryController (new IORegisterMemoryController(gameboy))
-{}
-
-std::unique_ptr<MemoryController>& MemoryBus::GetMemoryController(u16 address)
+bool MemoryBus::TryIOWrite(u16 address, u8 data)
 {
-    // if this is ROM, use the ROM's MBC
-    if(address >= 0x0000 && address < 0x8000)
-    {
-        return defaultMemoryController;// gameboy->GetCurrentROM()->GetMBC();
-    }
-    // if this is in IO register range, return a custom controller
     if((address >= 0xFF00 && address < 0xFF80) || address == 0xFFFF)
     {
-        return ioMemoryController;
+        switch(address & 0x00FF)
+        {
+        case 0x0F:
+            // interrupt request flags
+            gameboy->processor->InterruptsRequested = data;
+            break;
+        case 0x40:
+            gameboy->ppu->LCDC = data;
+            break;
+        case 0x41:
+            gameboy->ppu->STAT = data;
+            break;
+        case 0x42:
+            gameboy->ppu->ScrollY = data;
+            break;
+        case 0x43:
+            gameboy->ppu->ScrollX = data;
+            break;
+        case 0x44:
+            // Writing to this resets it
+            gameboy->ppu->Line = 0;
+            break;
+        case 0x45:
+            gameboy->ppu->LineCompare = data;
+            break;
+        case 0x46:
+            gameboy->processor->StartDMATransfer(data);
+            break;
+        case 0x47:
+            gameboy->ppu->BGPalette[0] = gColors[(data & 0b00000011) >> 0];
+            gameboy->ppu->BGPalette[1] = gColors[(data & 0b00001100) >> 2];
+            gameboy->ppu->BGPalette[2] = gColors[(data & 0b00110000) >> 4];
+            gameboy->ppu->BGPalette[3] = gColors[(data & 0b11000000) >> 6];
+            break;
+        case 0x48:
+            gameboy->ppu->OBJ0Palette[0] = gColors[(data & 0b00000011) >> 0];
+            gameboy->ppu->OBJ0Palette[1] = gColors[(data & 0b00001100) >> 2];
+            gameboy->ppu->OBJ0Palette[2] = gColors[(data & 0b00110000) >> 4];
+            gameboy->ppu->OBJ0Palette[3] = gColors[(data & 0b11000000) >> 6];
+            break;
+        case 0x49:
+            gameboy->ppu->OBJ1Palette[0] = gColors[(data & 0b00000011) >> 0];
+            gameboy->ppu->OBJ1Palette[1] = gColors[(data & 0b00001100) >> 2];
+            gameboy->ppu->OBJ1Palette[2] = gColors[(data & 0b00110000) >> 4];
+            gameboy->ppu->OBJ1Palette[3] = gColors[(data & 0b11000000) >> 6];
+            break;
+        case 0x50:
+            // replace ROM interrupt vectors
+            gameboy->memory_bus->WriteBytes(gameboy->game_rom->GetBytes().data(), 0x0000, 0x100);
+            gameboy->InBootROM = false;
+            break;
+        case 0xFF:
+            // interrupt enable flags
+            gameboy->processor->InterruptsEnabled = data;
+            break;
+        }
+
+        return true;
     }
-    // Else, use the default system memory controller
-    return defaultMemoryController;
+
+    return false;
+}
+
+bool MemoryBus::TryIORead(u16 address, u8& retval)
+{
+    if((address >= 0xFF00 && address < 0xFF80) || address == 0xFFFF)
+    {
+        switch(address & 0x00FF)
+        {
+        case 0x0F:
+            retval = gameboy->processor->InterruptsRequested; break;
+        case 0x40:
+            retval = gameboy->ppu->LCDC; break;
+        case 0x41:
+            retval = gameboy->ppu->STAT; break;
+        case 0x42:
+            retval = gameboy->ppu->ScrollY; break;
+        case 0x43:
+            retval = gameboy->ppu->ScrollX; break;
+        case 0x44:
+            retval = gameboy->ppu->Line; break;
+        case 0x45:
+            retval = gameboy->ppu->LineCompare; break;
+        case 0xFF:
+            retval = gameboy->processor->InterruptsEnabled; break;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+void MemoryBus::InitMBC(u8 CartType)
+{
+    switch(CartType)
+    {
+    case 0x00: // Cart Only
+        mbc = std::unique_ptr<MBC> (new MBC(gameboy)); break;
+    //case 0x01: // MBC1
+        //mbc = new MBC1(gameboy); break;
+    }
 }
 
 void MemoryBus::Write8(u16 address, u8 data)
 {
-    // These are forbidden areas
-    // Due to a bug, Tetris writes here, so
-    // handle gracefully rather than aborting
-    if((address >= 0xE000 && address <= 0xFDFF) ||
-       (address >= 0xFEA0 && address <= 0xFEFF))
+    if(!CheckBounds8(address))
+        return;
+    if(TryIOWrite(address, data))
         return;
 
-    GetMemoryController(address)->Write8(address, data);
+    mbc->Write8(address, data);
 }
 
 void MemoryBus::Write16(u16 address, u16 data)
 {
-    if((address >= 0xE000 && address <= 0xFDFF) ||
-       (address+1 >= 0xE000 && address+1 <= 0xFDFF) ||
-       (address >= 0xFEA0 && address <= 0xFEFF) ||
-       (address+1 >= 0xFEA0 && address+1 <= 0xFEFF))
+    if(!CheckBounds16(address))
         return;
 
-    GetMemoryController(address)->Write16(address, data);
+    mbc->Write16(address, data);
 }
 
 u8 MemoryBus::Read8(u16 address)
 {
-    if((address >= 0xE000 && address <= 0xFDFF) ||
-       (address >= 0xFEA0 && address <= 0xFEFF))
+    if(!CheckBounds8(address))
         return 0xFF;
+    u8 data;
+    if(TryIORead(address, data))
+        return data;
 
-    return GetMemoryController(address)->Read8(address);
+    return mbc->Read8(address);
 }
 
 u16 MemoryBus::Read16(u16 address)
 {
-    if((address >= 0xE000 && address <= 0xFDFF) ||
-       (address+1 >= 0xE000 && address+1 <= 0xFDFF) ||
-       (address >= 0xFEA0 && address <= 0xFEFF) ||
-       (address+1 >= 0xFEA0 && address+1 <= 0xFEFF))
+    if(!CheckBounds16(address))
         return 0xFFFF;
 
-    return GetMemoryController(address)->Read16(address);
+    return mbc->Read16(address);
 }
 // Use raw buffers for these rather than vectors
 // because man is std::vector slow...
 void MemoryBus::WriteBytes(const u8* src, u16 destination, u16 size)
 {
-    GetMemoryController(destination)->WriteBytes(src, destination, size);
+    mbc->WriteBytes(src, destination, size);
 }
 
 void MemoryBus::ReadBytes(u8* destination, u16 src, u16 size)
 {
-    GetMemoryController(src)->ReadBytes(destination, src, size);
+    mbc->ReadBytes(destination, src, size);
 }
 
 }; // namespace Memory

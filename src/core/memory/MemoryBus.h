@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #pragma once
-// I have no idea why I need to include this
-#include "controller/MemoryController.h"
+#include "mbc/MBC.h"
 
 #include "../../common/Types.h"
 
@@ -26,19 +25,20 @@ namespace Core {
 }; // namespace Core
 
 namespace Memory {
-class MemoryController;
 
 class MemoryBus
 {
-    // Default controllers for system memory
-    // and for handling IO Register reads/writes
-    std::unique_ptr<MemoryController> defaultMemoryController;
-    std::unique_ptr<MemoryController> ioMemoryController;
-    std::unique_ptr<MemoryController>& GetMemoryController(u16 address);
-
     Core::GameBoy* gameboy;
+    std::unique_ptr<MBC> mbc;
+
+    bool TryIOWrite(u16 address, u8 data);
+    bool TryIORead(u16 address, u8& retval);
+
 public:
-    MemoryBus(Core::GameBoy* gameboy);
+    MemoryBus(Core::GameBoy* gameboy)
+    :   gameboy(gameboy) {}
+
+    void InitMBC(u8 CartType);
 
     void Write8(u16 address, u8 data);
     void Write16(u16 address, u16 data);

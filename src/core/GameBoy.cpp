@@ -39,12 +39,12 @@ GameBoy::GameBoy(GameBoy::Options& options,
     ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 2, memory_bus));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom));
+    memory_bus->InitMBC(game_rom->GetCartType());
 
-    // load boot ROM at 0x0000
-    memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x100);
-    // load ROM at 0x0000 + 0x100 bytes
-    // the rest is loaded after boot ROM finishes
-    memory_bus->WriteBytes(rom.data() + 0x100, 0x0100, 0x8000 - 0x100);
+    // load ROM at 0x0000-0x7FFF
+    memory_bus->WriteBytes(rom.data(), 0x0000, 0x7FFF);
+    // load boot ROM at 0x0000-0x00FF
+    memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x0100);
 
     InBootROM = true;
 }

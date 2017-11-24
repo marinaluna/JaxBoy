@@ -21,7 +21,6 @@
 
 namespace Memory {
     class MemoryBus;
-    class IORegisterMemoryController;
 }; // namespace Memory
 
 // needed to make LogRegisters a friend of Processor
@@ -39,7 +38,7 @@ class GameBoy;
 
 class Processor
 {
-    friend class Memory::IORegisterMemoryController;
+    friend class Memory::MemoryBus;
     friend void Debug::Logger::LogRegisters(const Core::Processor& processor);
 
     // 16-bit program counter and stack pointer
