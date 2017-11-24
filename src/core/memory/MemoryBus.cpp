@@ -15,6 +15,7 @@
 #include "MemoryBus.h"
 
 #include "mbc/MBC.h"
+#include "mbc/MBC1.h"
 
 #include "../GameBoy.h"
 #include "../PPU.h"
@@ -143,15 +144,17 @@ bool MemoryBus::TryIORead(u16 address, u8& retval)
     return false;
 }
 
-void MemoryBus::InitMBC(u8 CartType)
+void MemoryBus::InitMBC(std::unique_ptr<Core::Rom>& rom)
 {
-    switch(CartType)
+    switch(rom->GetCartType())
     {
     case 0x00: // Cart Only
         mbc = std::unique_ptr<MBC> (new MBC(gameboy)); break;
-    //case 0x01: // MBC1
-        //mbc = new MBC1(gameboy); break;
+    case 0x01: // MBC1
+        mbc = std::unique_ptr<MBC> (new MBC1(gameboy)); break;
     }
+
+    mbc->Load(rom);
 }
 
 void MemoryBus::Write8(u16 address, u8 data)

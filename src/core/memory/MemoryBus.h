@@ -22,6 +22,7 @@
 
 namespace Core {
     class GameBoy;
+    class Rom;
 }; // namespace Core
 
 namespace Memory {
@@ -38,7 +39,7 @@ public:
     MemoryBus(Core::GameBoy* gameboy)
     :   gameboy(gameboy) {}
 
-    void InitMBC(u8 CartType);
+    void InitMBC(std::unique_ptr<Core::Rom>& rom);
 
     void Write8(u16 address, u8 data);
     void Write16(u16 address, u16 data);

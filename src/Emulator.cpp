@@ -116,6 +116,8 @@ int main(int argc, char* argv[])
     // Start the main loop
     gameboy->Run();
 
+    delete gameboy;
+
     // After closing
     std::cout << "\n\nExiting JaxBoy...\n\n";
 

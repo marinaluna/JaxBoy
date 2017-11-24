@@ -15,6 +15,7 @@
 #include "MBC.h"
 
 #include "../../GameBoy.h"
+#include "../../Rom.h"
 
 #include <string>
 
@@ -31,6 +32,12 @@ MBC::MBC(Core::GameBoy* gameboy)
     oam(new MemoryPage(0xFE00, 0x00A0)),
     highRam(new MemoryPage(0xFF80, 0x007F))
 {}
+
+void MBC::Load(std::unique_ptr<Core::Rom>& rom)
+{
+    WriteBytes(rom->GetBytes().data(), 0x0000, 0x4000);
+    WriteBytes(rom->GetBytes().data()+0x4000, 0x4000, 0x4000);
+}
 
 std::unique_ptr<MemoryPage>& MBC::GetPage(u16 address)
 {
@@ -54,9 +61,9 @@ std::unique_ptr<MemoryPage>& MBC::GetPage(u16 address)
 
 void MBC::Write8(u16 address, u8 data)
 {
+    std::unique_ptr<MemoryPage>& page = GetPage(address);
     try
     {
-        std::unique_ptr<MemoryPage>& page = GetPage(address);
         address -= page->GetBase();
         page->GetBytes().at(address) = data;
     }
@@ -83,9 +90,9 @@ void MBC::Write16(u16 address, u16 data)
 
 u8 MBC::Read8(u16 address)
 {
+    std::unique_ptr<MemoryPage>& page = GetPage(address);
     try
     {
-        std::unique_ptr<MemoryPage>& page = GetPage(address);
         address -= page->GetBase();
         return page->GetBytes().at(address);
     }

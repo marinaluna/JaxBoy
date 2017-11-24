@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #pragma once
+#include "Rom.h"
+#include "PPU.h"
+#include "processor/Processor.h"
 
 #include "../common/Types.h"
 

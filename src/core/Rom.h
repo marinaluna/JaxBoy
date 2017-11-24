@@ -49,6 +49,8 @@ public:
 
     u8 GetCartType()
         { return header.CartType; }
+    u8 GetROMSize()
+        { return header.RomSize; }
 };
 
 }; // namespace Core

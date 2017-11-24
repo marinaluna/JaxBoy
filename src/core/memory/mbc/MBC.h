@@ -21,6 +21,7 @@
 
 namespace Core {
     class GameBoy;
+    class Rom;
 }; // namespace Core
 
 namespace Memory {
@@ -57,6 +58,7 @@ protected:
 
 public:
     MBC(Core::GameBoy* gameboy);
+    virtual void Load(std::unique_ptr<Core::Rom>& rom);
 
     virtual std::unique_ptr<MemoryPage>& GetPage(u16 address);
 
