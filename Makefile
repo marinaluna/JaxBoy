@@ -27,5 +27,4 @@ clean:
 	mkdir -p build/src/core/processor
 	mkdir -p build/src/core/memory
 	mkdir -p build/src/core/memory/mbc
-	mkdir -p build/src/common
 	mkdir -p build/src/debug

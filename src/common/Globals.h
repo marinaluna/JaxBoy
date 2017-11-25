@@ -13,10 +13,20 @@
 // limitations under the License.
 
 #pragma once
-
 #include "Types.h"
 
 // constants
-extern const char* gAppName;
 
-extern const Color gColors[4];
+// Colors are in little endian because of
+// how I'm swapping buffers
+const Color gColors[4] =
+{
+    // White
+    0xFF0FBC9B,
+    // Light Grey
+    0xFF0FAC8B,
+    // Dark Grey
+    0xFF306230,
+    // Black
+    0xFF0F380F
+};
