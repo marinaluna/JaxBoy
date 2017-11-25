@@ -75,7 +75,7 @@ JaxBoy uses [make](https://www.gnu.org/software/make/), so building is simple.
 
 Currently it is intended to be built on MacOS with clang, but it is easy to change the Makefile for your system/toolchain.
 
-The only dependency for building is [MiniFB](https://github.com/emoon/minifb). Build that project and then place libminifb.a into `libs/`.
+The only dependency for building is [SDL2](https://www.libsdl.org/). Installing that varies by your operating system.
 
 Then, to build simply run:
 ```

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "SDLContext.h"
 #include "core/GameBoy.h"
 
 #include "common/Types.h"
@@ -20,6 +21,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <thread>
 
 
 int main(int argc, char* argv[])
@@ -113,10 +115,45 @@ int main(int argc, char* argv[])
 
     // Create the system instance
     Core::GameBoy* gameboy = ( new Core::GameBoy(options, rom, bootrom) );
-    // Start the main loop
-    gameboy->Run();
+    // Initalize Render Context
+    FrontEnd::SDLContext* sdl_context = new FrontEnd::SDLContext(160, 144, gameboy);
 
-    delete gameboy;
+    // TODO: Proper mutexes
+    bool update_frame = true;
+    bool poll_events = true;
+    // Start the SDL thread
+    std::thread sdl_thread([gameboy, sdl_context, &update_frame, &poll_events](){
+        while(!gameboy->IsStopped() && !sdl_context->IsStopped())
+        {
+            if(update_frame) {
+                sdl_context->Update(gameboy->GetPPU()->GetBackBuffer());
+                update_frame = false;
+                poll_events = true;
+            }
+        }
+    });
+    // Start the main thread
+    {
+        while(!gameboy->IsStopped() && !sdl_context->IsStopped())
+        {
+            gameboy->Cycle();
+            update_frame = true;
+
+            if(poll_events) {
+                sdl_context->PollEvents();
+                poll_events = false;
+            }
+        }
+    }
+
+    // Ensure both threads don't delete
+    sdl_thread.join();
+    if(gameboy)
+        delete gameboy;
+    if(sdl_context) {
+        sdl_context->Destroy();
+        delete sdl_context;
+    }
 
     // After closing
     std::cout << "\n\nExiting JaxBoy...\n\n";

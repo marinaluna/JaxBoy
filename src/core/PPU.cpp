@@ -16,8 +16,6 @@
 #include "memory/MemoryBus.h"
 
 #include "../common/Globals.h"
-// For frontend framebuffer purposes
-#include "../external/MiniFB/MiniFB.h"
 
 
 namespace Core {
@@ -26,18 +24,13 @@ PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
          std::shared_ptr<Memory::MemoryBus>& memory_bus)
 :
     gameboy (gameboy),
-    lcd_width (width),
-    lcd_height (height),
-    lcd_scale (scale),
-    buffer_width((width*scale)+2),
-    buffer_height((height*scale)+24),
-    memory_bus (memory_bus)
+    memory_bus (memory_bus),
+    width (width),
+    height (height),
+    scale (scale)
 {
-    // initialize the LCD
-    mfb_open(gAppName, buffer_width, buffer_height);
-
     // initialize buffers
-    framebuffer = std::vector<Color>(buffer_width * buffer_height);
+    back_buffer = std::vector<Color>(width * height);
     BGTileset = std::vector<Graphics::Tile>(256);
     OBJTileset = std::vector<Graphics::Tile>(256);
     // Start in DISPLAY_VBLANK
@@ -46,25 +39,21 @@ PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
     BGPalette[0] = BGPalette[1] = BGPalette[2] = BGPalette[3] = gColors[0x00];
     OBJ0Palette[0] = OBJ0Palette[1] = OBJ0Palette[2] = OBJ0Palette[3] = gColors[0x00];
     OBJ1Palette[0] = OBJ1Palette[1] = OBJ1Palette[2] = OBJ1Palette[3] = gColors[0x00];
-
-    // Update the window once to create it
-    mfb_update(framebuffer.data());
 }
 
-PPU::~PPU()
+std::vector<Color>& PPU::GetBackBuffer()
 {
-    mfb_close();
+    return back_buffer;
 }
 
-int PPU::Tick(int cycles)
+int PPU::Update(int cycles)
 {
     // Dirty hack to limit framerate without VSync
-    static int framelimiter = 400;
+    static int framelimiter = 250;
     if(framelimiter-- > 0)
         return 0;
     else
-        framelimiter = 400;
-
+        framelimiter = 250;
 
     int return_code = 0;
     if((LCDC & 0b10000000) != 0)
@@ -103,8 +92,6 @@ int PPU::Tick(int cycles)
                         frameCycles %= 4560;
                         STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
                         Line = 0;
-                        // Redraw the frame after V-Blank
-                        return_code = mfb_update(framebuffer.data());
                     }
                 }
                 break;
@@ -138,7 +125,7 @@ int PPU::Tick(int cycles)
 
 void PPU::DrawScanline()
 {
-    for(int x = 0; x < lcd_width; x++)
+    for(int x = 0; x < width; x++)
     {
         int y = Line;
 
@@ -180,14 +167,14 @@ void PPU::DrawScanline()
         // fetch the tile to draw
         u8 tileID = memory_bus->Read8(0x9800 + (fetchY * 32) + fetchX);
         // Draw the pixel * Scale
-        for(int yScaled = 0; yScaled < lcd_scale; yScaled++)
+        for(int yScaled = 0; yScaled < scale; yScaled++)
         {
-            for(int xScaled = 0; xScaled < lcd_scale; xScaled++)
+            for(int xScaled = 0; xScaled < scale; xScaled++)
             {
                 // Scale the tile
-                int drawY = ((Line * lcd_scale) + yScaled + 23) * buffer_width;
-                int drawX = (x * lcd_scale) + xScaled + 1;
-                framebuffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
+                int drawY = ((Line * scale) + yScaled) * width;
+                int drawX = (x * scale) + xScaled;
+                back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
             }
         }
     }
@@ -220,14 +207,14 @@ void PPU::DrawScanlineSprites()
             // 00 is transparent for sprites: use the color of the background instead
             if(color == 0x00)
                 continue;
-            for(int yScaled = 0; yScaled < lcd_scale; yScaled++)
+            for(int yScaled = 0; yScaled < scale; yScaled++)
             {
-                for(int xScaled = 0; xScaled < lcd_scale; xScaled++)
+                for(int xScaled = 0; xScaled < scale; xScaled++)
                 {
                     // Scale sprites
-                    int drawY = ((Line * lcd_scale) + yScaled + 23) * buffer_width;
-                    int drawX = ((x-8) * lcd_scale) + (px*lcd_scale) + xScaled + 1;
-                    framebuffer[drawY + drawX] = palette[color];
+                    int drawY = ((Line * scale) + yScaled) * width;
+                    int drawX = ((x-8) * scale) + (px*scale) + xScaled;
+                    back_buffer[drawY + drawX] = palette[color];
                 }
             }
         }

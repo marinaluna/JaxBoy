@@ -45,23 +45,25 @@ public:
             const std::vector<u8>& rom,
             const std::vector<u8>& bootrom);
 
-    void Run();
+    void Cycle(void);
     void Stop()
         { Stopped = true; }
-
-    void SystemError(const std::string& error_msg);
-
+    bool IsStopped()
+        { return Stopped == true; }
     bool IsInBootROM()
         { return InBootROM; }
     std::unique_ptr<Rom>& GetCurrentROM()
         { return game_rom; };
+    std::unique_ptr<PPU>& GetPPU()
+        { return ppu; }
+
+    void SystemError(const std::string& error_msg);
 
 private:
     friend class Memory::MemoryBus;
 
     // Options configuration
     GameBoy::Options _Options;
-
     // Components
     std::unique_ptr<Processor> processor;
     std::unique_ptr<PPU> ppu;

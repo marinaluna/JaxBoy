@@ -101,23 +101,21 @@ class PPU
     // Position of the Window, X is minus 7
     u8 WindowY, WindowX;
 
-    // Framebuffer of pixels that draw on the screen
-    std::vector<Color> framebuffer;
+    // Back buffer the ppu draws to
+    std::vector<Color> back_buffer;
     // Spritesheets
     std::vector<Graphics::Tile> BGTileset;
     std::vector<Graphics::Tile> OBJTileset;
     // Sprites to draw
     std::vector<Graphics::Sprite> ScanlineSprites;
 
+    // Window size
+    int width;
+    int height;
+    int scale;
+
     // cycle counter per frame
     int frameCycles;
-
-    int lcd_width;
-    int lcd_height;
-    int lcd_scale;
-    // width/height + border
-    int buffer_width;
-    int buffer_height;
 
     // system pointers
     GameBoy* gameboy;
@@ -126,9 +124,10 @@ class PPU
 public:
     PPU(GameBoy* gameboy, int width, int height, int scale,
         std::shared_ptr<Memory::MemoryBus>& memory_bus);
-    ~PPU();
 
-    int Tick(int cycles);
+    int Update(int cycles);
+
+    std::vector<Color>& GetBackBuffer();
 
     void DrawScanline();
     void DrawScanlineSprites();

@@ -14,45 +14,40 @@
 
 #pragma once
 
-#include "../common/Types.h"
+#include "common/Types.h"
 
+#include <SDL2/SDL.h>
 #include <vector>
 
 
 namespace Core {
-
 class GameBoy;
+}; // namespace Core
 
-class Rom
+namespace FrontEnd {
+
+class SDLContext
 {
-    struct Header
-    {
-        char Name[16];
-        char Manufacturer[4];
-        bool UsesSGBFeatures;
-        u8 CartType;
-        u8 RomSize;
-        u8 RamSize;
-        bool International;
-        u8 Licensee;
-        u8 VersionCode;
-    };
-    Header header;
-    // all bytes in the ROM
-    std::vector<u8> bytes;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* lcd_texture;
+    SDL_Event window_event;
+    // front render buffer that is drawn
+    Color* front_buffer;
+
+    bool Stopped = false;
 
 public:
-    Rom(const std::vector<u8>& bytes);
+    SDLContext(int width, int height, Core::GameBoy* gameboy);
+    void Destroy();
 
-    std::vector<u8>& GetBytes()
-        { return bytes; }
+    void Stop()
+        { Stopped = true;}
+    bool IsStopped()
+        { return Stopped; }
 
-    char* GetRomName()
-        { return header.Name; }
-    u8 GetCartType()
-        { return header.CartType; }
-    u8 GetROMSize()
-        { return header.RomSize; }
+    void Update(std::vector<Color>& back_buffer);
+    void PollEvents();
 };
 
-}; // namespace Core
+}; // namespace FrontEnd

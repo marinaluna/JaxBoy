@@ -22,9 +22,9 @@ const char* gAppName = "JaxBoy";
 const Color gColors[4] =
 {
     // White
-    MFB_RGB(0x9B, 0xBC, 0x0F),
+    MFB_RGB(0x0F, 0xBC, 0x9B),
     // Light Grey
-    MFB_RGB(0x8B, 0xAC, 0x0F),
+    MFB_RGB(0x0F, 0xAC, 0x8B),
     // Dark Grey
     MFB_RGB(0x30, 0x62, 0x30),
     // Black
