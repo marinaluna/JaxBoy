@@ -22,7 +22,7 @@
 
 namespace Core {
 
-Rom::Rom(const std::vector<u8>& bytes)
+Rom::Rom(const std::vector<u8>& bytes, int force_mbc)
 :
     bytes (bytes)
 {
@@ -57,7 +57,7 @@ Rom::Rom(const std::vector<u8>& bytes)
     //     11 - MBC3                            FD - BANDAI TAMA5
     //     12 - MBC3 + RAM                      FE - HuC3
     //     13 - MBC3 + RAM + BATTERY            FF - HuC1 + RAM + BATTERY
-    header.CartType = bytes.at(0x147);
+    header.CartType = (force_mbc == -1)? bytes.at(0x147) : force_mbc;
     //LOG_MSG("Cart type " + header.CartType);
 }
 

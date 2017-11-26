@@ -42,7 +42,7 @@ class Rom
     std::vector<u8> bytes;
 
 public:
-    Rom(const std::vector<u8>& bytes);
+    Rom(const std::vector<u8>& bytes, int force_mbc);
 
     std::vector<u8>& GetBytes()
         { return bytes; }

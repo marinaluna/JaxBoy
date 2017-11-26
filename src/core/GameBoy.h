@@ -39,7 +39,10 @@ public:
     {
         bool isDebug = false;
         int scale = 1;
+        int force_mbc = -1;
     };
+    Options& GetOptions()
+        { return _Options; }
 
     GameBoy(GameBoy::Options& options,
             int width,

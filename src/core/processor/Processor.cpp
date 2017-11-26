@@ -157,7 +157,9 @@ int Processor::ExecuteNext()
     // the table to look for opcode information in
     const Opcode* opcode_lookup_table = OPCODE_LOOKUP;
 
-    Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
+    if(gameboy->GetOptions().isDebug) {
+        Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
+    }
 
     switch(opcode)
     {

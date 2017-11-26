@@ -120,6 +120,17 @@ int main(int argc, char* argv[])
                     options.scale = std::stoi(arg.substr(7));
                 }
                 ///////////////////////
+                // -force--mbc=<int>
+                ///////////////////////
+                else if(arg.substr(0, 11) == "-force--mbc") {
+                    // Make sure you're passing an integer to it
+                    if(arg.length() < 12)
+                        throw std::invalid_argument("Usage:\n-force--mbc=<int>");
+                    // Read the integer for the mbc
+                    // throws std::invalid_argument
+                    options.force_mbc = std::stoi(arg.substr(12));
+                }
+                ///////////////////////
                 // INVALID ARG
                 ///////////////////////
                 else {

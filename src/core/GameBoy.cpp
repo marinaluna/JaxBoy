@@ -40,7 +40,7 @@ GameBoy::GameBoy(GameBoy::Options& options,
     processor = std::unique_ptr<Processor> (new Processor(this, memory_bus));
     ppu = std::unique_ptr<PPU> (new PPU(this, width, height, memory_bus));
 
-    game_rom = std::unique_ptr<Rom> (new Rom(rom));
+    game_rom = std::unique_ptr<Rom> (new Rom(rom, options.force_mbc));
     // load ROM at 0x0000-0x7FFF
     memory_bus->InitMBC(game_rom);
 
