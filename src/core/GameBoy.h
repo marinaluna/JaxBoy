@@ -42,6 +42,8 @@ public:
     };
 
     GameBoy(GameBoy::Options& options,
+            int width,
+            int height,
             const std::vector<u8>& rom,
             const std::vector<u8>& bootrom);
 
@@ -57,11 +59,19 @@ public:
     std::unique_ptr<PPU>& GetPPU()
         { return ppu; }
 
+    void UpdateKeys();
+    void KeyPressed(u8 key);
+    void KeyReleased(u8 key);
+
     void SystemError(const std::string& error_msg);
 
 private:
     friend class Memory::MemoryBus;
 
+    // P1 IO Register
+    u8 P1;
+    // All keys set
+    u8 Keys;
     // Options configuration
     GameBoy::Options _Options;
     // Components

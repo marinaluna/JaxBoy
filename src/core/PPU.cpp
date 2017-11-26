@@ -20,14 +20,13 @@
 
 namespace Core {
 
-PPU::PPU(GameBoy* gameboy, int width, int height, int scale,
+PPU::PPU(GameBoy* gameboy, int width, int height,
          std::shared_ptr<Memory::MemoryBus>& memory_bus)
 :
     gameboy (gameboy),
     memory_bus (memory_bus),
     width (width),
-    height (height),
-    scale (scale)
+    height (height)
 {
     // initialize buffers
     back_buffer = std::vector<Color>(width * height);
@@ -49,11 +48,11 @@ std::vector<Color>& PPU::GetBackBuffer()
 int PPU::Update(int cycles)
 {
     // Dirty hack to limit framerate without VSync
-    static int framelimiter = 250;
+    static int framelimiter = 150;
     if(framelimiter-- > 0)
         return 0;
     else
-        framelimiter = 250;
+        framelimiter = 150;
 
     int return_code = 0;
     if((LCDC & 0b10000000) != 0)
@@ -166,17 +165,10 @@ void PPU::DrawScanline()
             fetchX %= 32;
         // fetch the tile to draw
         u8 tileID = memory_bus->Read8(0x9800 + (fetchY * 32) + fetchX);
-        // Draw the pixel * Scale
-        for(int yScaled = 0; yScaled < scale; yScaled++)
-        {
-            for(int xScaled = 0; xScaled < scale; xScaled++)
-            {
-                // Scale the tile
-                int drawY = ((Line * scale) + yScaled) * width;
-                int drawX = (x * scale) + xScaled;
-                back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
-            }
-        }
+        // Draw the pixel
+        int drawY = Line * width;
+        int drawX = x;
+        back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
     }
 
     DrawScanlineSprites();
@@ -207,16 +199,9 @@ void PPU::DrawScanlineSprites()
             // 00 is transparent for sprites: use the color of the background instead
             if(color == 0x00)
                 continue;
-            for(int yScaled = 0; yScaled < scale; yScaled++)
-            {
-                for(int xScaled = 0; xScaled < scale; xScaled++)
-                {
-                    // Scale sprites
-                    int drawY = ((Line * scale) + yScaled) * width;
-                    int drawX = ((x-8) * scale) + (px*scale) + xScaled;
-                    back_buffer[drawY + drawX] = palette[color];
-                }
-            }
+            int drawY = Line * width;
+            int drawX = (x - 8) + px;
+            back_buffer[drawY + drawX] = palette[color];
         }
     }
     ScanlineSprites.clear();

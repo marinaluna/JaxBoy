@@ -38,11 +38,11 @@ Processor::Processor(GameBoy* gameboy,
 int Processor::Tick()
 {
     // Dirty hack to limit framerate without VSync
-    static int framelimiter = 250;
+    static int framelimiter = 150;
     if(framelimiter-- > 0)
         return 0;
     else
-        framelimiter = 250;
+        framelimiter = 150;
 
 
     int new_cycles = ExecuteNext();

@@ -101,22 +101,44 @@ int main(int argc, char* argv[])
         for(int i = 3; i < argc; i++)
         {
             std::string arg (argv[i]);
-            if(arg == "-debug")
-            {
-                options.isDebug = true;
+            try {
+                ///////////////////////
+                // -debug
+                ///////////////////////
+                if(arg == "-debug") {
+                    options.isDebug = true;
+                }
+                ///////////////////////
+                // -scale=<int>
+                ///////////////////////
+                else if(arg.substr(0, 6) == "-scale") {
+                    // Make sure you're passing an integer to it
+                    if(arg.length() < 7)
+                        throw std::invalid_argument("Usage:\n-scale=<int>");
+                    // Read the integer for the scale
+                    // throws std::invalid_argument
+                    options.scale = std::stoi(arg.substr(7));
+                }
+                ///////////////////////
+                // INVALID ARG
+                ///////////////////////
+                else {
+                    throw std::invalid_argument("Unknown argument " + arg);
+                }
             }
-            else
-            {
-                std::cerr << "Unknown argument: " << argv[i] << "\n";
+            catch(std::exception& e) {
+                std::cerr << "Error parsing argument: " << argv[i] << ": " << e.what() << std::endl;
                 return -1;
             }
         }
     }
 
+    int width = 160;
+    int height = 144;
     // Create the system instance
-    Core::GameBoy* gameboy = ( new Core::GameBoy(options, rom, bootrom) );
+    Core::GameBoy* gameboy = ( new Core::GameBoy(options, width, height, rom, bootrom) );
     // Initalize Render Context
-    FrontEnd::SDLContext* sdl_context = new FrontEnd::SDLContext(160, 144, gameboy);
+    FrontEnd::SDLContext* sdl_context = new FrontEnd::SDLContext(width, height, options.scale, gameboy);
 
     // TODO: Proper mutexes
     bool update_frame = true;
@@ -140,7 +162,7 @@ int main(int argc, char* argv[])
             update_frame = true;
 
             if(poll_events) {
-                sdl_context->PollEvents();
+                sdl_context->PollEvents(gameboy);
                 poll_events = false;
             }
         }

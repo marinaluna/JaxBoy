@@ -112,7 +112,6 @@ class PPU
     // Window size
     int width;
     int height;
-    int scale;
 
     // cycle counter per frame
     int frameCycles;
@@ -122,7 +121,7 @@ class PPU
     std::shared_ptr<Memory::MemoryBus> memory_bus;
 
 public:
-    PPU(GameBoy* gameboy, int width, int height, int scale,
+    PPU(GameBoy* gameboy, int width, int height,
         std::shared_ptr<Memory::MemoryBus>& memory_bus);
 
     int Update(int cycles);

@@ -28,6 +28,8 @@
 namespace Core {
 
 GameBoy::GameBoy(GameBoy::Options& options,
+                 int width,
+                 int height,
                  const std::vector<u8>& rom,
                  const std::vector<u8>& bootrom)
 :
@@ -36,7 +38,7 @@ GameBoy::GameBoy(GameBoy::Options& options,
     memory_bus = std::make_shared<Memory::MemoryBus>(this);
 
     processor = std::unique_ptr<Processor> (new Processor(this, memory_bus));
-    ppu = std::unique_ptr<PPU> (new PPU(this, 160, 144, 1, memory_bus));
+    ppu = std::unique_ptr<PPU> (new PPU(this, width, height, memory_bus));
 
     game_rom = std::unique_ptr<Rom> (new Rom(rom));
     // load ROM at 0x0000-0x7FFF
@@ -46,6 +48,8 @@ GameBoy::GameBoy(GameBoy::Options& options,
     memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x0100);
 
     InBootROM = true;
+    P1 = 0xCF;
+    Keys = 0xFF;
 }
 
 void GameBoy::Cycle()
@@ -56,6 +60,32 @@ void GameBoy::Cycle()
     {
         Stop();
     }
+
+    UpdateKeys();
+}
+
+void GameBoy::UpdateKeys()
+{
+    u8 oldP1 = P1;
+    P1 |= 0x0F;
+
+    // Reading START, SELECT, A, B
+    if(P1 & 0x10)
+        P1 = (P1 & 0xF0) | (Keys & 0x0F);
+    // Reading DOWN, UP, LEFT, RIGHT
+    if(P1 & 0x20)
+        P1 = (P1 & 0xF0) | (Keys >> 0x4);
+
+    if((P1 & 0x0F) != 0x0F && (oldP1 & 0x0F) == 0x0F)
+        memory_bus->Write8(0xFF0F, memory_bus->Read8(0xFF0F) | 0x10);
+}
+void GameBoy::KeyPressed(u8 key)
+{
+    Keys &= ~key;
+}
+void GameBoy::KeyReleased(u8 key)
+{
+    Keys |= key;
 }
 
 void GameBoy::SystemError(const std::string& error_msg)

@@ -28,6 +28,11 @@ namespace FrontEnd {
 
 class SDLContext
 {
+    // window size
+    int width;
+    int height;
+    int scale;
+    // SDL Components
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* lcd_texture;
@@ -38,7 +43,7 @@ class SDLContext
     bool Stopped = false;
 
 public:
-    SDLContext(int width, int height, Core::GameBoy* gameboy);
+    SDLContext(int width, int height, int scale, Core::GameBoy* gameboy);
     void Destroy();
 
     void Stop()
@@ -47,7 +52,7 @@ public:
         { return Stopped; }
 
     void Update(std::vector<Color>& back_buffer);
-    void PollEvents();
+    void PollEvents(Core::GameBoy* gameboy);
 };
 
 }; // namespace FrontEnd

@@ -53,6 +53,11 @@ bool MemoryBus::TryIOWrite(u16 address, u8 data)
     {
         switch(address & 0x00FF)
         {
+        case 0x00:
+            // Controller input
+            // 0x30 means no controller polling
+            gameboy->P1 = (gameboy->P1 & 0x0F) | (data & 0x30);
+            break;
         case 0x0F:
             // interrupt request flags
             gameboy->processor->InterruptsRequested = data;
@@ -120,6 +125,8 @@ bool MemoryBus::TryIORead(u16 address, u8& retval)
     {
         switch(address & 0x00FF)
         {
+        case 0x00:
+            retval = gameboy->P1 | 0xC0; break;
         case 0x0F:
             retval = gameboy->processor->InterruptsRequested; break;
         case 0x40:
