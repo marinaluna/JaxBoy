@@ -61,9 +61,9 @@ std::unique_ptr<MemoryPage>& MBC::GetPage(u16 address)
 
 void MBC::Write8(u16 address, u8 data)
 {
-    std::unique_ptr<MemoryPage>& page = GetPage(address);
     try
     {
+        std::unique_ptr<MemoryPage>& page = GetPage(address);
         address -= page->GetBase();
         page->GetBytes().at(address) = data;
     }
@@ -90,9 +90,9 @@ void MBC::Write16(u16 address, u16 data)
 
 u8 MBC::Read8(u16 address)
 {
-    std::unique_ptr<MemoryPage>& page = GetPage(address);
     try
     {
+        std::unique_ptr<MemoryPage>& page = GetPage(address);
         address -= page->GetBase();
         return page->GetBytes().at(address);
     }

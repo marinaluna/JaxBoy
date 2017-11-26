@@ -43,7 +43,7 @@ int Processor::Tick()
         return 0;
     else
         framelimiter = 150;
-
+    
 
     int new_cycles = ExecuteNext();
     new_cycles += TickInterrupts();
@@ -156,6 +156,8 @@ int Processor::ExecuteNext()
     bool branch_taken = false;
     // the table to look for opcode information in
     const Opcode* opcode_lookup_table = OPCODE_LOOKUP;
+
+    Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
 
     switch(opcode)
     {

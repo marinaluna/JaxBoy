@@ -13,30 +13,19 @@
 // limitations under the License.
 
 #pragma once
-#include "MBC.h"
+#include "MBC1.h"
 
 
 namespace Memory {
 
-class MBC1
-: public MBC
+class MBC3
+: public MBC1
 {
-protected:
-    std::vector<std::unique_ptr<MemoryPage>> switchableBanks;
-    u8 romBank;
-    u8 numBanks;
-    bool extRamEnabled;
-    bool ramBanking;
-    std::unique_ptr<MemoryPage> ramBanks[0x04];
-    u8 selectedBank;
-
 public:
-    MBC1(Core::GameBoy* gameboy);
-    virtual void Load(std::unique_ptr<Core::Rom>& rom);
-
-    virtual std::unique_ptr<MemoryPage>& GetPage(u16 address);
+    MBC3(Core::GameBoy* gameboy);
 
     virtual void Write8(u16 address, u8 data);
+    virtual u8 Read8(u16 address);
 };
 
 }; // namespace Memory

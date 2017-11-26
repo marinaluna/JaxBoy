@@ -70,7 +70,7 @@ private:
 
     // P1 IO Register
     u8 P1;
-    // All keys set
+    // Keys currently pressed
     u8 Keys;
     // Options configuration
     GameBoy::Options _Options;

@@ -46,6 +46,9 @@ void MBC1::Load(std::unique_ptr<Core::Rom>& rom)
 
         std::memcpy(switchableBanks.at(i-1)->GetRaw(), rom->GetBytes().data() + (0x4000*i), 0x4000);
     }
+    for(int i = 0; i < 4; i++) {
+        ramBanks[i] = std::unique_ptr<MemoryPage>(new MemoryPage(0xA000, 0x2000));
+    }
 }
 
 std::unique_ptr<MemoryPage>& MBC1::GetPage(u16 address)

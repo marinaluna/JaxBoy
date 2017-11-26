@@ -16,6 +16,7 @@
 
 #include "mbc/MBC.h"
 #include "mbc/MBC1.h"
+#include "mbc/MBC3.h"
 
 #include "../GameBoy.h"
 #include "../PPU.h"
@@ -159,6 +160,8 @@ void MemoryBus::InitMBC(std::unique_ptr<Core::Rom>& rom)
         mbc = std::unique_ptr<MBC> (new MBC(gameboy)); break;
     case 0x01: // MBC1
         mbc = std::unique_ptr<MBC> (new MBC1(gameboy)); break;
+    case 0x13: // MBC3 + RAM + BATTERY
+        mbc = std::unique_ptr<MBC> (new MBC3(gameboy)); break;
     }
 
     mbc->Load(rom);
