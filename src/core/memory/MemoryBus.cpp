@@ -25,6 +25,8 @@
 
 #include "../../common/Globals.h"
 
+#include <string>
+
 
 static bool CheckBounds8(u16 address)
 {
@@ -103,6 +105,12 @@ bool MemoryBus::TryIOWrite(u16 address, u8 data)
             gameboy->ppu->OBJ1Palette[2] = gColors[(data & 0b00110000) >> 4];
             gameboy->ppu->OBJ1Palette[3] = gColors[(data & 0b11000000) >> 6];
             break;
+        case 0x4A:
+            gameboy->ppu->WY = data;
+            break;
+        case 0x4B:
+            gameboy->ppu->WX = data;
+            break;
         case 0x50:
             // replace ROM interrupt vectors
             gameboy->memory_bus->WriteBytes(gameboy->game_rom->GetBytes().data(), 0x0000, 0x100);
@@ -142,6 +150,10 @@ bool MemoryBus::TryIORead(u16 address, u8& retval)
             retval = gameboy->ppu->Line; break;
         case 0x45:
             retval = gameboy->ppu->LineCompare; break;
+        case 0x4A:
+            retval = gameboy->ppu->WY; break;
+        case 0x4B:
+            retval = gameboy->ppu->WX; break;
         case 0xFF:
             retval = gameboy->processor->InterruptsEnabled; break;
         }
@@ -162,6 +174,8 @@ void MemoryBus::InitMBC(std::unique_ptr<Core::Rom>& rom)
         mbc = std::unique_ptr<MBC> (new MBC1(gameboy)); break;
     case 0x13: // MBC3 + RAM + BATTERY
         mbc = std::unique_ptr<MBC> (new MBC3(gameboy)); break;
+    default:
+        throw std::runtime_error("MBC type unknown! " + std::to_string(rom->GetCartType()));
     }
 
     mbc->Load(rom);

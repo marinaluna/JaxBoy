@@ -99,7 +99,7 @@ class PPU
     Color OBJ0Palette[4];
     Color OBJ1Palette[4];
     // Position of the Window, X is minus 7
-    u8 WindowY, WindowX;
+    u8 WY = 0, WX = 0;
 
     // Back buffer the ppu draws to
     std::vector<Color> back_buffer;
@@ -129,6 +129,7 @@ public:
     std::vector<Color>& GetBackBuffer();
 
     void DrawScanline();
+    void DrawScanlineWindow();
     void DrawScanlineSprites();
     void FetchScanlineSprites();
     void DecodeTiles();

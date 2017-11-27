@@ -24,6 +24,8 @@ class MBC3
 public:
     MBC3(Core::GameBoy* gameboy);
 
+
+    virtual std::unique_ptr<MemoryPage>& GetPage(u16 address);
     virtual void Write8(u16 address, u8 data);
     virtual u8 Read8(u16 address);
 };

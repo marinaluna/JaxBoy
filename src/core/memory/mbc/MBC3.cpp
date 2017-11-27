@@ -26,6 +26,15 @@ MBC3::MBC3(Core::GameBoy* gameboy)
     // TODO: RTC, Battery
 }
 
+std::unique_ptr<MemoryPage>& MBC3::GetPage(u16 address)
+{
+    if(address >= 0x4000 && address <= 0x7FFF) {
+        return switchableBanks.at(romBank - 1);
+    }
+
+    return MBC1::GetPage(address);
+}
+
 void MBC3::Write8(u16 address, u8 data)
 {
     if(address >= 0x2000 && address <= 0x3FFF) {

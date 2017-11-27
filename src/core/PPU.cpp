@@ -18,6 +18,7 @@
 #include "../common/Globals.h"
 
 
+
 namespace Core {
 
 PPU::PPU(GameBoy* gameboy, int width, int height,
@@ -157,20 +158,53 @@ void PPU::DrawScanline()
         if(fetchX >= 32)
             fetchX %= 32;
         // fetch the tile to draw
-        u8 tileID = memory_bus->Read8(0x9800 + (fetchY * 32) + fetchX);
+        u16 base = 0x9800;
+        if(LCDC & 0x08) {
+            base += 0x0400;
+        }
+        u8 tileID = memory_bus->Read8(base + (fetchY * 32) + fetchX);
         // Draw the pixel
         int drawY = Line * width;
         int drawX = x;
         back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
     }
 
-    DrawScanlineSprites();
+    if((LCDC & 0x20) && Line >= WY) {
+        DrawScanlineWindow();
+    }
+    if(LCDC & 0x02) {
+        DrawScanlineSprites();
+    }
+}
+
+void PPU::DrawScanlineWindow()
+{
+    // TODO: Track progress since window drawing
+    // can be stopped and started again at a later LY
+    for(int x = WX - 7; x < width; x++)
+    {
+        int y = Line;
+        // Tile and pixel to draw
+        u8 tileY = y / 8;
+        u8 tileX = x / 8;
+        u8 pixelY = y % 8;
+        u8 pixelX = x % 8;
+        // fetch the tile to draw
+        u16 base = 0x9800;
+        if(LCDC & 0x40) {
+            base += 0x0400;
+        }
+        u8 tileID = memory_bus->Read8(base + (tileY * 32) + tileX);
+        // Draw the pixel
+        int drawY = Line * width;
+        int drawX = x;
+        back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX, pixelY)];
+    }
 }
 
 void PPU::DrawScanlineSprites()
 {
-    // TODO: change this based on hardware setting
-    const int SPRITE_HEIGHT = 8;
+    const int SPRITE_HEIGHT = (LCDC & 04)? 16 : 8;
 
     for(auto it = ScanlineSprites.begin(); it != ScanlineSprites.end(); it++)
     {
@@ -204,8 +238,7 @@ void PPU::FetchScanlineSprites()
 {
     const int OAM_SIZE = 4;
     const int OAM_COUNT = 40;
-    // TODO: change this based on hardware setting
-    const int SPRITE_HEIGHT = 8;
+    const int SPRITE_HEIGHT = (LCDC & 04)? 16 : 8;
 
     int spriteCounter = 0;
     for(int i = 0; i < OAM_COUNT; i++)
