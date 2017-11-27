@@ -97,6 +97,7 @@ public:
     // load
     void ld(Reg8& reg, u8 value);
     void ld(Reg16& reg, u16 value);
+    void ld_sp_plus(Reg16& reg, s8 value);
     void ldAt(u16 addr, u8 value);
     void ldAt(u16 addr, u16 value);
     // inc/dec

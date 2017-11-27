@@ -329,7 +329,7 @@ int Processor::ExecuteNext()
         case 0x31:
             ld(reg_SP, GetOperand16()); break;
         case 0xF8:
-            ld(reg_HL, reg_SP.word + static_cast<s8>(GetOperand8())); break;
+            ld_sp_plus(reg_HL, static_cast<s8>(GetOperand8())); break;
         case 0xF9:
             ld(reg_SP, reg_HL.word); break;
 

@@ -30,6 +30,14 @@ void Processor::ld(Reg16& reg, u16 value)
 {
     reg.word = value;
 }
+void Processor::ld_sp_plus(Reg16& reg, s8 value)
+{
+    SetZero( false );
+    SetSubtract( false );
+    SetHalfCarry( ((reg_SP.word & 0x000F) + (static_cast<u8>(value) & 0x0F)) & 0x0010 );
+    SetCarry( ((reg_SP.word & 0x00FF) + static_cast<u8>(value)) & 0x0100 );
+    reg.word = static_cast<u16>( reg_SP.word + value );
+}
 
 // write
 void Processor::ldAt(u16 addr, u8 value)
@@ -109,12 +117,11 @@ void Processor::add(Reg16& reg, u16 value)
 }
 void Processor::add(Reg16& reg, s8 value)
 {
-    u16 tempAdd = (reg.word & 0x00FF) + static_cast<u8>(value);
     SetSubtract( false );
     SetZero( false );
     SetHalfCarry( ((reg.word & 0x000F) + (static_cast<u8>(value) & 0x0F)) & 0x0010 );
-    SetCarry( tempAdd & 0x0100 );
-    reg.word = tempAdd;
+    SetCarry( ((reg.word & 0x00FF) + static_cast<u8>(value)) & 0x0100 );
+    reg.word += value;
 }
 void Processor::adc(Reg8& reg, u8 value)
 {
@@ -194,14 +201,14 @@ void Processor::daa()
     }
     else
     {
-        if(HalfCarry() || (reg_A & 0x0F) > 0x09)
-        {
-            reg_A += 0x06;
-        }
         if(Carry() || reg_A > 0x99)
         {
             reg_A += 0x60;
             SetCarry( true );
+        }
+        if(HalfCarry() || (reg_A & 0x0F) > 0x09)
+        {
+            reg_A += 0x06;
         }
     }
     SetZero( reg_A == 0x00 );
