@@ -35,11 +35,16 @@ class Rom;
 class GameBoy
 {
 public:
+    static const int FRAMELIMITER_MAX = 300;
+    int framelimiter = FRAMELIMITER_MAX;
+
     struct Options
     {
-        bool isDebug = false;
+        bool debug = false;
         int scale = 1;
         int force_mbc = -1;
+        bool skip_bootrom = false;
+        bool framelimiter_hack = true;
     };
     Options& GetOptions()
         { return _Options; }
@@ -65,6 +70,10 @@ public:
     void UpdateKeys();
     void KeyPressed(u8 key);
     void KeyReleased(u8 key);
+
+    bool SpeedEnabled = false;
+    void EnableSpeed();
+    void DisableSpeed();
 
     void SystemError(const std::string& error_msg);
 

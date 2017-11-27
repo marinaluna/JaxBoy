@@ -19,7 +19,7 @@ build/%.o:%.cpp
 	$(CXX) -O2 -c $(CXXFLAGS) $< -o $@
 
 run:$(BINARY)
-	@$(BINARY) roms/tetris.gb roms/bootrom.bin -debug
+	@$(BINARY) roms/tetris.gb roms/bootrom.bin --scale=2
 
 clean:
 	rm -rf build/*

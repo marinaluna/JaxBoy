@@ -103,32 +103,44 @@ int main(int argc, char* argv[])
             std::string arg (argv[i]);
             try {
                 ///////////////////////
-                // -debug
+                // --debug
                 ///////////////////////
-                if(arg == "-debug") {
-                    options.isDebug = true;
+                if(arg == "--debug") {
+                    options.debug = true;
                 }
                 ///////////////////////
-                // -scale=<int>
+                // --scale=<int>
                 ///////////////////////
-                else if(arg.substr(0, 6) == "-scale") {
+                else if(arg.substr(0, 7) == "--scale") {
                     // Make sure you're passing an integer to it
-                    if(arg.length() < 7)
-                        throw std::invalid_argument("Usage:\n-scale=<int>");
+                    if(arg.length() < 8)
+                        throw std::invalid_argument("Usage:\n--scale=<int>");
                     // Read the integer for the scale
                     // throws std::invalid_argument
-                    options.scale = std::stoi(arg.substr(7));
+                    options.scale = std::stoi(arg.substr(8));
                 }
                 ///////////////////////
-                // -force--mbc=<int>
+                // --force-mbc=<int>
                 ///////////////////////
-                else if(arg.substr(0, 11) == "-force--mbc") {
+                else if(arg.substr(0, 11) == "--force-mbc") {
                     // Make sure you're passing an integer to it
                     if(arg.length() < 12)
-                        throw std::invalid_argument("Usage:\n-force--mbc=<int>");
+                        throw std::invalid_argument("Usage:\n--force-mbc=<int>");
                     // Read the integer for the mbc
                     // throws std::invalid_argument
                     options.force_mbc = std::stoi(arg.substr(12));
+                }
+                ///////////////////////
+                // --skip-bootrom
+                ///////////////////////
+                else if(arg == "--skip-bootrom") {
+                    options.skip_bootrom = true;
+                }
+                ///////////////////////
+                // --no-framelimiter-hack
+                ///////////////////////
+                else if(arg == "--no-framelimiter-hack") {
+                    options.framelimiter_hack = false;
                 }
                 ///////////////////////
                 // INVALID ARG

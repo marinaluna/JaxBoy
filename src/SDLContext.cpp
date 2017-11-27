@@ -120,6 +120,8 @@ void SDLContext::PollEvents(Core::GameBoy* gameboy)
                 gameboy->KeyPressed(Key::KEY_LEFT); break;
             case SDLK_d:
                 gameboy->KeyPressed(Key::KEY_RIGHT); break;
+            case SDLK_SPACE:
+                gameboy->EnableSpeed(); break;
             }
             break;
         case SDL_KEYUP:
@@ -140,6 +142,8 @@ void SDLContext::PollEvents(Core::GameBoy* gameboy)
                 gameboy->KeyReleased(Key::KEY_LEFT); break;
             case SDLK_d:
                 gameboy->KeyReleased(Key::KEY_RIGHT); break;
+            case SDLK_SPACE:
+                gameboy->DisableSpeed(); break;
             }
             break;
         }

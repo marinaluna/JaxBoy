@@ -58,11 +58,17 @@ class Processor
     Reg8& reg_H = reg_HL.high;
     Reg8& reg_L = reg_HL.low;
     Reg8& reg_A = reg_AF.high;
-    // flags
-    bool F_Zero;
-    bool F_Subtract;
-    bool F_HalfCarry;
-    bool F_Carry;
+    Reg8& reg_F = reg_AF.low;
+
+    inline void SetZero(bool value) {       (value)? (reg_F |= 0x80) : (reg_F &= ~0x80); }
+    inline void SetSubtract(bool value) {   (value)? (reg_F |= 0x40) : (reg_F &= ~0x40); }
+    inline void SetHalfCarry(bool value) {  (value)? (reg_F |= 0x20) : (reg_F &= ~0x20); }
+    inline void SetCarry(bool value) {      (value)? (reg_F |= 0x10) : (reg_F &= ~0x10); }
+    inline bool Zero() {                    return ((reg_F & 0x80) != 0x00); }
+    inline bool Subtract() {                return ((reg_F & 0x40) != 0x00); }
+    inline bool HalfCarry() {               return ((reg_F & 0x20) != 0x00); }
+    inline bool Carry() {                   return ((reg_F & 0x10) != 0x00); }
+
     // Interrupt registers
     bool MasterInterruptsEnabled;
     u8 InterruptsEnabled;

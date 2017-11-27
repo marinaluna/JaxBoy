@@ -44,16 +44,27 @@ GameBoy::GameBoy(GameBoy::Options& options,
     // load ROM at 0x0000-0x7FFF
     memory_bus->InitMBC(game_rom);
 
-    // load boot ROM at 0x0000-0x00FF
-    memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x0100);
-
-    InBootROM = true;
+    if(!_Options.skip_bootrom) {
+        // load boot ROM at 0x0000-0x00FF
+        memory_bus->WriteBytes(bootrom.data(), 0x0000, 0x0100);
+        InBootROM = true;
+    }
+    
     P1 = 0xCF;
     Keys = 0xFF;
 }
 
 void GameBoy::Cycle()
 {
+    // Dirty hack to limit framerate without VSync 
+    if(_Options.framelimiter_hack &&
+       !SpeedEnabled ) {
+        if(framelimiter-- == 0)
+            framelimiter = FRAMELIMITER_MAX;
+        else
+            return;
+    }
+
     int cycles = processor->Tick();
         
     if(ppu->Update(cycles) == -1)
@@ -75,7 +86,7 @@ void GameBoy::UpdateKeys()
     // Reading DOWN, UP, LEFT, RIGHT
     if(P1 & 0x20)
         P1 = (P1 & 0xF0) | (Keys >> 0x4);
-
+    // If a signal went low enable the Joypad interrupt
     if((P1 & 0x0F) != 0x0F && (oldP1 & 0x0F) == 0x0F)
         memory_bus->Write8(0xFF0F, memory_bus->Read8(0xFF0F) | 0x10);
 }
@@ -86,6 +97,15 @@ void GameBoy::KeyPressed(u8 key)
 void GameBoy::KeyReleased(u8 key)
 {
     Keys |= key;
+}
+
+void GameBoy::EnableSpeed()
+{
+    SpeedEnabled = true;
+}
+void GameBoy::DisableSpeed()
+{
+    SpeedEnabled = false;
 }
 
 void GameBoy::SystemError(const std::string& error_msg)

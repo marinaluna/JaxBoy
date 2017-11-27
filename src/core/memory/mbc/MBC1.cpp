@@ -54,9 +54,9 @@ void MBC1::Load(std::unique_ptr<Core::Rom>& rom)
 std::unique_ptr<MemoryPage>& MBC1::GetPage(u16 address)
 {
     if(address >= 0x4000 && address <= 0x7FFF) {
-        if(!ramBanking)
-            return switchableBanks.at(romBank - 1 | (selectedBank << 5));
-        else
+        //if(!ramBanking)
+        //    return switchableBanks.at(romBank - 1 | (selectedBank << 5));
+        //else
             return switchableBanks.at(romBank - 1);
     }
     if(address >= 0xA000 && address <= 0xBFFF) {

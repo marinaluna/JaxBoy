@@ -33,12 +33,8 @@ void Log(const std::string prefix, const std::string& msg)
 
 void LogRegisters(const Core::Processor& processor)
 {
-    u8 zero = (processor.F_Zero)? 0b10000000 : 0;
-    u8 subtract = (processor.F_Subtract)? 0b01000000 : 0;
-    u8 halfcarry = (processor.F_HalfCarry)? 0b00100000 : 0;
-    u8 carry = (processor.F_Carry)? 0b00010000 : 0;
-    std::cout << "F: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(zero | subtract | halfcarry | carry) << "h\n";
     std::cout << "A: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(processor.reg_A) << "h\n";
+    std::cout << "F: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(processor.reg_F) << "h\n";
     std::cout << "B: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(processor.reg_B) << "h\n";
     std::cout << "C: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(processor.reg_C) << "h\n";
     std::cout << "D: " << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(processor.reg_D) << "h\n";

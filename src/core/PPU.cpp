@@ -47,13 +47,6 @@ std::vector<Color>& PPU::GetBackBuffer()
 
 int PPU::Update(int cycles)
 {
-    // Dirty hack to limit framerate without VSync
-    static int framelimiter = 150;
-    if(framelimiter-- > 0)
-        return 0;
-    else
-        framelimiter = 150;
-
     int return_code = 0;
     if((LCDC & 0b10000000) != 0)
     {

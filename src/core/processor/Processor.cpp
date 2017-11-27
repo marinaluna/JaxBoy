@@ -28,23 +28,16 @@ Processor::Processor(GameBoy* gameboy,
     gameboy (gameboy),
     memory_bus (memory_bus)
 {
-    reg_PC.word = 0x0000;
-    reg_SP.word = 0x0000;
-    reg_A = reg_B = reg_C = reg_D = reg_E = reg_H = reg_L = 0x00;
+    if(gameboy->GetOptions().skip_bootrom) {
+        reg_PC.word = 0x0100;
+        reg_SP.word = 0xFFFE;
+    }
 
     MasterInterruptsEnabled = true;
 }
 
 int Processor::Tick()
 {
-    // Dirty hack to limit framerate without VSync
-    static int framelimiter = 150;
-    if(framelimiter-- > 0)
-        return 0;
-    else
-        framelimiter = 150;
-    
-
     int new_cycles = ExecuteNext();
     new_cycles += TickInterrupts();
 
@@ -157,8 +150,9 @@ int Processor::ExecuteNext()
     // the table to look for opcode information in
     const Opcode* opcode_lookup_table = OPCODE_LOOKUP;
 
-    if(gameboy->GetOptions().isDebug) {
+    if(gameboy->GetOptions().debug) {
         Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
+        Debug::Logger::LogRegisters(*this);
     }
 
     switch(opcode)
@@ -634,7 +628,7 @@ int Processor::ExecuteNext()
             jr(static_cast<s8>(GetOperand8()));
             break;
         case 0x20:
-            if(!F_Zero) {
+            if(!Zero()) {
                 branch_taken = true;
                 jr(static_cast<s8>(GetOperand8()));
                 break;
@@ -642,7 +636,7 @@ int Processor::ExecuteNext()
             reg_PC.word++;
             break;
         case 0x28:
-            if(F_Zero) {
+            if(Zero()) {
                 branch_taken = true;
                 jr(static_cast<s8>(GetOperand8()));
                 break;
@@ -650,7 +644,7 @@ int Processor::ExecuteNext()
             reg_PC.word++;
             break;
         case 0x30:
-            if(!F_Carry) {
+            if(!Carry()) {
                 branch_taken = true;
                 jr(static_cast<s8>(GetOperand8()));
                 break;
@@ -658,7 +652,7 @@ int Processor::ExecuteNext()
             reg_PC.word++;
             break;
         case 0x38:
-            if(F_Carry) {
+            if(Carry()) {
                 branch_taken = true;
                 jr(static_cast<s8>(GetOperand8()));
                 break;
@@ -671,7 +665,7 @@ int Processor::ExecuteNext()
             jp(GetOperand16());
             break;
         case 0xC2:
-            if(!F_Zero) {
+            if(!Zero()) {
                 branch_taken = true;
                 jp(GetOperand16());
                 break;
@@ -679,7 +673,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xCA:
-            if(F_Zero) {
+            if(Zero()) {
                 branch_taken = true;
                 jp(GetOperand16());
                 break;
@@ -687,7 +681,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xD2:
-            if(!F_Carry) {
+            if(!Carry()) {
                 branch_taken = true;
                 jp(GetOperand16());
                 break;
@@ -695,7 +689,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xDA:
-            if(F_Carry) {
+            if(Carry()) {
                 branch_taken = true;
                 jp(GetOperand16());
                 break;
@@ -711,7 +705,7 @@ int Processor::ExecuteNext()
             call(GetOperand16());
             break;
         case 0xC4:
-            if(!F_Zero) {
+            if(!Zero()) {
                 branch_taken = true;
                 call(GetOperand16());
                 break;
@@ -719,7 +713,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xCC:
-            if(F_Zero) {
+            if(Zero()) {
                 branch_taken = true;
                 call(GetOperand16());
                 break;
@@ -727,7 +721,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xD4:
-            if(!F_Carry) {
+            if(!Carry()) {
                 branch_taken = true;
                 call(GetOperand16());
                 break;
@@ -735,7 +729,7 @@ int Processor::ExecuteNext()
             reg_PC.word += 2;
             break;
         case 0xDC:
-            if(F_Carry) {
+            if(Carry()) {
                 branch_taken = true;
                 call(GetOperand16());
                 break;
@@ -766,28 +760,28 @@ int Processor::ExecuteNext()
             ret();
             break;
         case 0xC0:
-            if(!F_Zero) {
+            if(!Zero()) {
                 branch_taken = true;
                 ret();
                 break;
             }
             break;
         case 0xC8:
-            if(F_Zero) {
+            if(Zero()) {
                 branch_taken = true;
                 ret();
                 break;
             }
             break;
         case 0xD0:
-            if(!F_Carry) {
+            if(!Carry()) {
                 branch_taken = true;
                 ret();
                 break;
             }
             break;
         case 0xD8:
-            if(F_Carry) {
+            if(Carry()) {
                 branch_taken = true;
                 ret();
                 break;
@@ -815,8 +809,12 @@ int Processor::ExecuteNext()
             pop(reg_DE); break;
         case 0xE1:
             pop(reg_HL); break;
-        case 0xF1:
-            pop(reg_AF); break;
+        case 0xF1: {
+            pop(reg_AF);
+            // Lower 4 bits of F must be 0
+            reg_F &= 0xF0;
+            break;
+        }
 
         default:
             Debug::Logger::LogDisassembly(memory_bus, reg_PC.word - 1, 1);
