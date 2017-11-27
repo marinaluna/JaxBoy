@@ -29,7 +29,7 @@ Running the emulator requires that you have access to a GameBoy boot ROM image. 
 Below is a compatibility table for JaxBoy.
 Only roms that have been tested are listed.
 
-| Key: |
+| Key | Definition |
 | --- | --- |
 | ⚪️⚪️⚪️⚪️⚪️ | Does not boot. |
 | 🔵⚪️⚪️⚪️⚪️ | Boots to the title screen. |
