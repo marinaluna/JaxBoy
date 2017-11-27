@@ -5,69 +5,76 @@ A WIP GameBoy emulator written in C++
 
 ## Description
 
-JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. The emulator is in the early stages and has very basic ROM loading support. It loads few games and has no controller support. It is WIP and is very inaccurate and incomplete.
+JaxBoy is a [GameBoy](https://en.wikipedia.org/wiki/Game_Boy) emulator written in C++. It is WIP and very incomplete.
 
 ## Status
 
-JaxBoy is currently capable of emulating a few commercial games with varying levels of success. There are glitches and games are not playable without controller support.
+JaxBoy is currently capable of emulating a variety of commercial games with varying levels of success. There are inevitable glitches in all games, and many don't run at all.
 
-Running the emulator requires that you have access to a GameBoy boot ROM image.
-
-The emulator currently runs at varying speeds (usually too fast) as there is no frame throttle yet. Compatibility is the main priority right now, so a throttle will not be implemented any time soon (better it run too fast than too slow, eh?).
+Running the emulator requires that you have access to a GameBoy boot ROM image. If not, use a dummy bootrom.bin file and add the --skip-bootrom argument.
 
 ## Screenshots
 
+![pokemonblue](screenshots/pokemonblue.png)
+![donkeykong](screenshots/donkeykong.png)
+![zelda](screenshots/zelda.png)
 ![tetris](screenshots/tetris.png)
-![tetris2](screenshots/tetris2.png)
 ![tennis](screenshots/tennis.png)
-![drmario](screenshots/drmario.png)
-![alleyway](screenshots/alleyway.png)
 ![catrap](screenshots/catrap.png)
-![gameboygallery](screenshots/gameboygallery.png)
-![crystalquest](screenshots/crystalquest.png)
+![palamedes](screenshots/palamedes.png)
+![castlevania](screenshots/castlevania.png)
 
 ## Known game compatibility
 
 Below is a compatibility table for JaxBoy.
 Only roms that have been tested are listed.
 
+| Key: |
+| ⚪️⚪️⚪️⚪️⚪️ | Does not boot. |
+| 🔵⚪️⚪️⚪️⚪️ | Boots to the title screen. |
+| 🔵🔵⚪️⚪️⚪️ | Slighty playable. |
+| 🔵🔵🔵️⚪️⚪️ | Plays through a signifcant portion of the game. |
+| 🔵🔵🔵🔵⚪️ | Almost perfect with minor graphical errors. |
+| 🔵🔵🔵🔵🔵 | Perfect emulation. |
+
 | Game | Compatibility | Notes |
 | --- | --- | --- |
-| Alleyway                                  | 🔵⚪️⚪️⚪️⚪️ |   Boots and starts game, with graphical errors. |
-| Baseball                                  | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Castlelian                                | 🔵⚪️⚪️⚪️⚪️ |   Boots. Displays only alphabet on screen. |
-| Castlevania Adventure                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Catrap                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
-| Centipede                                 | 🔵⚪️⚪️⚪️⚪️ |   Cycles through splash screens and plays demo, with severe graphical errors. |
-| Crystal Quest                             | 🔵🔵️⚪️⚪️⚪️ |   Boots and plays demo without graphical errors. |
-| Donkey Kong                               | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Dr. Mario                                 | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, but then hangs. |
-| Dropzone                                  | 🔵🔵️⚪️⚪️⚪️ |   Boots to title screen and cycles through screens with minor graphical errors. |
-| Flipull                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
-| Game of Harmony, The                      | 🔵⚪️⚪️⚪️⚪️ |   Flips through a series of screens, then crashes. Has graphical errors. |
-| Gameboy Gallery                           | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, then crashes. |
-| Kwirk                                     | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen without graphical errors. |
-| Legend of Zelda: Link's Awakening, The    | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Loopz                                     | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Missile Command                           | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen and plays demo. |
-| Motocross Maniacs                         | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| NFL Football                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Othello                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen, with minor graphical errors. |
-| Palamedes                                 | 🔵🔵️⚪️⚪️⚪️ |   Boots to title screen. |
-| Pipe Dream                                | 🔵🔵️⚪️⚪️⚪️ |   Cycles through splash screens and boots to title screen. |
-| Pokemon Blue                              | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Pop Up                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to title screen. |
-| Q Billion                                 | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Serpent                                   | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen and plays demo, with severe graphical errors. |
-| Shanghai                                  | 🔵🔵️️⚪️⚪️⚪️ |   Boots to title screen without graphical errors. |
-| Spot                                      | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen and plays demo. Graphical errors. |
-| Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Tasmania Story                            | ⚪️⚪️⚪️⚪️⚪️ |   Does not boot. |
-| Tennis                                    | 🔵⚪️⚪️⚪️⚪️ |   Boots to the title screen. |
+| Alleyway                                  | 🔵🔵⚪️⚪️⚪️ |   Cannot control and hangs after dying. Major graphical glitches. |
+| Baseball                                  | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Castlelian                                | 🔵🔵⚪️⚪️⚪️ |   First level unplayable. |
+| Castlevania Adventure                     | 🔵🔵⚪️⚪️⚪️ |   Graphical errors. |
+| Catrap                                    | 🔵🔵🔵🔵️⚪️ |   |
+| Centipede                                 | 🔵🔵🔵️⚪️⚪️ |   Graphical errors. |
+| Crystal Quest                             | 🔵🔵🔵🔵️⚪️ |   Minor graphical errors. |
+| Donkey Kong                               | 🔵🔵🔵⚪️⚪️ |   Hangs after finishing first level. |
+| Dr. Mario                                 | 🔵⚪️⚪️⚪️⚪️ |   Hangs when starting a game. |
+| Dropzone                                  | 🔵️⚪️⚪️⚪️⚪️ |   Crashes on title screen. |
+| Flipull                                   | 🔵🔵⚪️⚪️⚪️ |   Hangs when starting level. |
+| Game of Harmony, The                      | 🔵🔵⚪️⚪️⚪️ |   Hangs ingame. |
+| Gameboy Gallery                           | 🔵⚪️⚪️⚪️⚪️ |   Hangs on title screen. |
+| Kwirk                                     | 🔵🔵🔵️⚪️⚪️ |   Minor graphical errors. |
+| Legend of Zelda: Link's Awakening, The    | 🔵🔵⚪️⚪️⚪️ |   Crashes when leaving the house. |
+| Loopz                                     | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Missile Command                           | 🔵🔵️️⚪️⚪️⚪️ |   Major graphical errors. |
+| Motocross Maniacs                         | ⚪️⚪️⚪️⚪️⚪️ |   |
+| NFL Football                              | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Othello                                   | 🔵🔵⚪️⚪️⚪️ |   Hangs ingame. |
+| Palamedes                                 | 🔵🔵🔵🔵️⚪️ |   Minor graphical errors. |
+| Pipe Dream                                | 🔵🔵⚪️⚪️⚪️ |   Major graphical errors. |
+| Pokemon Blue                              | 🔵🔵⚪️️⚪⚪️ |   Crashes when entering name screen or using an attack. |
+| Pokemon Red                               | 🔵🔵️⚪️⚪️⚪️ |   Crashes when entering name screen or using an attack. |
+| Pop Up                                    | 🔵🔵🔵⚪️⚪️ |   |
+| Q Billion                                 | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Serpent                                   | 🔵🔵⚪️⚪️⚪️ |   Severe graphical errors. |
+| Shanghai                                  | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Spot                                      | 🔵⚪️⚪️⚪️⚪️ |   |
+| Super Mario Land                          | ⚪️⚪️⚪️⚪️⚪️ |   |
+| Tasmania Story                            | 🔵🔵⚪️⚪️⚪️ |   No idea how to play. |
+| Tennis                                    | 🔵🔵🔵🔵⚪️ |   |
 | Tesserae                                  | 🔵⚪️⚪️⚪️⚪️ |   Hangs at GAMETEK splash screen. |
-| Tetris                                    | 🔵🔵️⚪️⚪️⚪️ |   Boots to the title screen, and runs the demo. |
-| Wheel of Fortune                          | 🔵⚪️⚪️⚪️⚪️ |   Boots to main screen, severe graphical errors. |
-| World Bowling                             | 🔵⚪️⚪️⚪️⚪️ |   Cycles through various game screens with severe graphical errors. |
+| Tetris                                    | 🔵🔵🔵🔵️️⚪️ |   Only spawns one block type and adds score incorrectly. |
+| Wheel of Fortune                          | 🔵⚪️⚪️⚪️⚪️ |   Hangs on splash screen. |
+| World Bowling                             | 🔵🔵🔵⚪️⚪️ |   Graphical errors. |
 
 ## Building and running
 
