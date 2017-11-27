@@ -55,6 +55,6 @@ enum Key : u8
     KEY_RIGHT = 0x10,
     KEY_START = 0x08,
     KEY_SELECT = 0x04,
-    KEY_A = 0x02,
-    KEY_B = 0x01
+    KEY_B = 0x02,
+    KEY_A = 0x01
 };
