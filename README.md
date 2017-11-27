@@ -30,6 +30,7 @@ Below is a compatibility table for JaxBoy.
 Only roms that have been tested are listed.
 
 | Key: |
+| --- |
 | ⚪️⚪️⚪️⚪️⚪️ | Does not boot. |
 | 🔵⚪️⚪️⚪️⚪️ | Boots to the title screen. |
 | 🔵🔵⚪️⚪️⚪️ | Slighty playable. |
