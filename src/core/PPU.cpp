@@ -213,6 +213,9 @@ void PPU::DrawScanlineWindow()
         // Draw the pixel
         int drawY = y * width;
         int drawX = x - 7;
+        if(drawX < 0)
+            continue;
+        
         back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX, pixelY)];
     }
 }
