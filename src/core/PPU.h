@@ -90,10 +90,10 @@ class PPU
     u8 LCDC;
     // LCD Status
     u8 STAT;
-    u8 ScrollY, ScrollX;
-    u8 Line;
+    u8 SCY, SCX;
+    u8 LY;
     // Acts as a breakpoint
-    u8 LineCompare;
+    u8 LYC;
     // Palettes
     Color BGPalette[4];
     Color OBJ0Palette[4];

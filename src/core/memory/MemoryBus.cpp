@@ -63,7 +63,7 @@ bool MemoryBus::TryIOWrite(u16 address, u8 data)
             break;
         case 0x0F:
             // interrupt request flags
-            gameboy->processor->InterruptsRequested = data;
+            gameboy->processor->IF = data;
             break;
         case 0x40:
             gameboy->ppu->LCDC = data;
@@ -72,17 +72,17 @@ bool MemoryBus::TryIOWrite(u16 address, u8 data)
             gameboy->ppu->STAT = data;
             break;
         case 0x42:
-            gameboy->ppu->ScrollY = data;
+            gameboy->ppu->SCY = data;
             break;
         case 0x43:
-            gameboy->ppu->ScrollX = data;
+            gameboy->ppu->SCX = data;
             break;
         case 0x44:
             // Writing to this resets it
-            gameboy->ppu->Line = 0;
+            gameboy->ppu->LY = 0;
             break;
         case 0x45:
-            gameboy->ppu->LineCompare = data;
+            gameboy->ppu->LYC = data;
             break;
         case 0x46:
             gameboy->processor->StartDMATransfer(data);
@@ -118,7 +118,7 @@ bool MemoryBus::TryIOWrite(u16 address, u8 data)
             break;
         case 0xFF:
             // interrupt enable flags
-            gameboy->processor->InterruptsEnabled = data;
+            gameboy->processor->IE = data;
             break;
         }
 
@@ -137,25 +137,25 @@ bool MemoryBus::TryIORead(u16 address, u8& retval)
         case 0x00:
             retval = gameboy->P1 | 0xC0; break;
         case 0x0F:
-            retval = gameboy->processor->InterruptsRequested; break;
+            retval = gameboy->processor->IF; break;
         case 0x40:
             retval = gameboy->ppu->LCDC; break;
         case 0x41:
             retval = gameboy->ppu->STAT; break;
         case 0x42:
-            retval = gameboy->ppu->ScrollY; break;
+            retval = gameboy->ppu->SCY; break;
         case 0x43:
-            retval = gameboy->ppu->ScrollX; break;
+            retval = gameboy->ppu->SCX; break;
         case 0x44:
-            retval = gameboy->ppu->Line; break;
+            retval = gameboy->ppu->LY; break;
         case 0x45:
-            retval = gameboy->ppu->LineCompare; break;
+            retval = gameboy->ppu->LYC; break;
         case 0x4A:
             retval = gameboy->ppu->WY; break;
         case 0x4B:
             retval = gameboy->ppu->WX; break;
         case 0xFF:
-            retval = gameboy->processor->InterruptsEnabled; break;
+            retval = gameboy->processor->IE; break;
         }
 
         return true;

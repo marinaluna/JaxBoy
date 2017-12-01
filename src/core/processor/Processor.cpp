@@ -33,7 +33,7 @@ Processor::Processor(GameBoy* gameboy,
         reg_SP.word = 0xFFFE;
     }
 
-    MasterInterruptsEnabled = true;
+    IME = true;
 }
 
 int Processor::Tick()
@@ -46,14 +46,14 @@ int Processor::Tick()
 
 int Processor::TickInterrupts()
 {
-    if(MasterInterruptsEnabled)
+    if(IME)
     {
         // Check if there is any interrupts we can execute
-        if(InterruptsEnabled != 0 && InterruptsRequested != 0)
+        if(IE && IF)
         {
             // Mask out only the interrupts that have
             // both IE and IF set
-            u8 interruptsPending = InterruptsEnabled & InterruptsRequested;
+            u8 interruptsPending = IE & IF;
             // The priority of each interrupt is determined
             // by their position in the bit mask of IE/IF
             //
@@ -62,47 +62,42 @@ int Processor::TickInterrupts()
             // 00000100b - Timer
             // 00001000b - Serial
             // 00010000b - JoyPad: lowest priority
-            if((interruptsPending & 0b00000001) != 0)
-            {
+            if(interruptsPending & 0b00000001) {
                 // V-Blank
-                MasterInterruptsEnabled = false;
-                InterruptsRequested &= ~0b00000001;
+                IME = false;
+                IF &= ~0b00000001;
 
                 call(0x0040);
                 return 12;
             }
-            if((interruptsPending & 0b00000010) != 0)
-            {
+            if(interruptsPending & 0b00000010) {
                 // STAT
-                MasterInterruptsEnabled = false;
-                InterruptsRequested &= ~0b00000010;
+                IME = false;
+                IF &= ~0b00000010;
 
                 call(0x0048);
                 return 12;
             }
-            if((interruptsPending & 0b00000100) != 0)
-            {
+            if(interruptsPending & 0b00000100) {
                 // Timer
-                MasterInterruptsEnabled = false;
-                InterruptsRequested &= ~0b00000100;
+                IME = false;
+                IF &= ~0b00000100;
 
                 call(0x0050);
                 return 12;
             }
-            if((interruptsPending & 0b00001000) != 0)
-            {
+            if(interruptsPending & 0b00001000) {
                 // Serial
-                MasterInterruptsEnabled = false;
-                InterruptsRequested &= ~0b00001000;
+                IME = false;
+                IF &= ~0b00001000;
 
                 call(0x0058);
                 return 12;
             }
-            if((interruptsPending & 0b00010000) != 0)
-            {
+            if(interruptsPending & 0b00010000) {
                 // JoyPad
-                MasterInterruptsEnabled = false;
-                InterruptsRequested &= ~0b00010000;
+                IME = false;
+                IF &= ~0b00010000;
 
                 call(0x0060);
                 return 12;
@@ -173,10 +168,10 @@ int Processor::ExecuteNext()
             break;
         // DI
         case 0xF3:
-            MasterInterruptsEnabled = false; break;
+            IME = false; break;
         // EI
         case 0xFB:
-            MasterInterruptsEnabled = true; break;
+            IME = true; break;
         
         // LD reg8, u8
         case 0x06:
@@ -788,7 +783,7 @@ int Processor::ExecuteNext()
             }
             break;
         case 0xD9:
-            MasterInterruptsEnabled = true;
+            IME = true;
             ret();
             break;
 

@@ -49,7 +49,7 @@ std::vector<Color>& PPU::GetBackBuffer()
 int PPU::Update(int cycles)
 {
     int return_code = 0;
-    if((LCDC & 0b10000000) != 0)
+    if(LCDC & 0x80)
     {
         frameCycles += cycles;
         switch(STAT & 0x03)
@@ -62,7 +62,7 @@ int PPU::Update(int cycles)
                     DrawScanline();
                     // Carry leftover cycles into next mode
                     frameCycles %= 207;
-                    if(++Line == 144)
+                    if(++LY == 144)
                     {
                         // At the last line; enter V-Blank
                         STAT = (STAT & ~0x03) | DISPLAY_VBLANK;
@@ -74,17 +74,26 @@ int PPU::Update(int cycles)
                         // Proceed to the next line
                         STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
                     }
+
+                    if(LY == LYC) {
+                        // If LY == LYC set the coincidence bits in STAT and trigger the interrupt
+                        // (I don't know why there are two coincidence bits)
+                        STAT |= 0x44;
+                        memory_bus->Write8(0xFF0F, memory_bus->Read8(0xFF0F) | 0x02);
+                    } else {
+                        STAT &= ~0x44;
+                    }
                 }
                 break;
             case DISPLAY_VBLANK:
                 // Have we completed a scanline?
-                if((static_cast<int>(frameCycles / 465) + 144) > Line)
+                if((static_cast<int>(frameCycles / 465) + 144) > LY)
                 {
-                    if(++Line > 153)
+                    if(++LY > 153)
                     {
                         frameCycles %= 4560;
                         STAT = (STAT & ~0x03) | DISPLAY_OAMACCESS;
-                        Line = 0;
+                        LY = 0;
                     }
                 }
                 break;
@@ -110,7 +119,7 @@ int PPU::Update(int cycles)
     {
         // If LCDC is disabled, reset all this stuff
         frameCycles = 0;
-        Line = 0;
+        LY = 0;
     }
 
     return return_code;
@@ -120,7 +129,7 @@ void PPU::DrawScanline()
 {
     for(int x = 0; x < width; x++)
     {
-        int y = Line;
+        int y = LY;
 
         // Tile and pixel to draw
         u8 tileY = y / 8;
@@ -128,10 +137,10 @@ void PPU::DrawScanline()
         u8 pixelY = y % 8;
         u8 pixelX = x % 8;
         // Scroll offsets
-        u8 tileYoff = ScrollY / 8;
-        u8 tileXoff = ScrollX / 8;
-        u8 pixelYoff = ScrollY % 8;
-        u8 pixelXoff = ScrollX % 8;
+        u8 tileYoff = SCY / 8;
+        u8 tileXoff = SCX / 8;
+        u8 pixelYoff = SCY % 8;
+        u8 pixelXoff = SCX % 8;
         // boundary between the scroll tiles
         u8 upperHalf = (8 - pixelYoff);
         u8 leftHalf = (8 - pixelXoff);
@@ -164,12 +173,12 @@ void PPU::DrawScanline()
         }
         u8 tileID = memory_bus->Read8(base + (fetchY * 32) + fetchX);
         // Draw the pixel
-        int drawY = Line * width;
+        int drawY = LY * width;
         int drawX = x;
         back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX+pixelXoff, pixelY+pixelYoff)];
     }
 
-    if((LCDC & 0x20) && Line >= WY) {
+    if((LCDC & 0x20) && LY >= WY) {
         DrawScanlineWindow();
     }
     if(LCDC & 0x02) {
@@ -181,14 +190,20 @@ void PPU::DrawScanlineWindow()
 {
     // TODO: Track progress since window drawing
     // can be stopped and started again at a later LY
-    for(int x = WX - 7; x < width; x++)
+
+    // TODO: It seems I've reached my first impass not
+    // having perfect cycle-count accuracy:
+    // If the window is disabled partway down the screen,
+    // it doesn't draw the last line of the window.
+    // (window is disabled before window finishes drawing)
+    for(int x = WX; x < width + 7; x++)
     {
-        int y = Line;
+        int y = LY;
         // Tile and pixel to draw
-        u8 tileY = y / 8;
-        u8 tileX = x / 8;
-        u8 pixelY = y % 8;
-        u8 pixelX = x % 8;
+        u8 tileY = (LY - WY) / 8;
+        u8 tileX = (x - WX) / 8;
+        u8 pixelY = (LY - WY) % 8;
+        u8 pixelX = (x - WX) % 8;
         // fetch the tile to draw
         u16 base = 0x9800;
         if(LCDC & 0x40) {
@@ -196,8 +211,8 @@ void PPU::DrawScanlineWindow()
         }
         u8 tileID = memory_bus->Read8(base + (tileY * 32) + tileX);
         // Draw the pixel
-        int drawY = Line * width;
-        int drawX = x;
+        int drawY = y * width;
+        int drawX = x - 7;
         back_buffer[drawY + drawX] = BGPalette[BGTileset[tileID].GetPixel(pixelX, pixelY)];
     }
 }
@@ -210,7 +225,7 @@ void PPU::DrawScanlineSprites()
     {
         Graphics::Sprite& sprite = *it;
         // offset by 16 to align with Sprite y
-        int adjScanline = Line + 16;
+        int adjScanline = LY + 16;
         int y = sprite._y;
         int x = sprite._x;
         const Color* palette = (sprite.palette == 0)? OBJ0Palette : OBJ1Palette;
@@ -226,7 +241,7 @@ void PPU::DrawScanlineSprites()
             // 00 is transparent for sprites: use the color of the background instead
             if(color == 0x00)
                 continue;
-            int drawY = Line * width;
+            int drawY = LY * width;
             int drawX = (x - 8) + px;
             back_buffer[drawY + drawX] = palette[color];
         }
@@ -248,7 +263,7 @@ void PPU::FetchScanlineSprites()
         memory_bus->ReadBytes(buffer, 0xFE00 + (i * OAM_SIZE), OAM_SIZE);
         sprite.Decode(buffer);
         // offset by 16 to align with Sprite y
-        u8 adjScanline = Line + 16;
+        u8 adjScanline = LY + 16;
         u8 y = sprite._y;
         u8 x = sprite._x;
         // if the sprite is offscreen

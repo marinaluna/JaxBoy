@@ -84,6 +84,11 @@ private:
     u8 P1;
     // Keys currently pressed
     u8 Keys;
+    // Timer registers
+    u8 TIMA; // timer counter; incremented at TAC frequency
+    u8 TMA;  // timer modulo; when timer overflows, loads this value
+    u8 TAC;  // timer control; control speed of TIMA
+
     // Options configuration
     GameBoy::Options _Options;
     // Components

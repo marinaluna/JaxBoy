@@ -70,9 +70,9 @@ class Processor
     inline bool Carry() {                   return ((reg_F & 0x10) != 0x00); }
 
     // Interrupt registers
-    bool MasterInterruptsEnabled;
-    u8 InterruptsEnabled;
-    u8 InterruptsRequested;
+    bool IME;
+    u8 IE;
+    u8 IF;
     int TickInterrupts();
 
     GameBoy* gameboy;
