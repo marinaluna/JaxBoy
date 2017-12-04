@@ -62,8 +62,8 @@ Only roms that have been tested are listed.
 | Othello                                   | 🔵🔵⚪️⚪️⚪️ |   Hangs ingame. |
 | Palamedes                                 | 🔵🔵🔵🔵️⚪️ |   Minor graphical errors. |
 | Pipe Dream                                | 🔵🔵⚪️⚪️⚪️ |   Major graphical errors. |
-| Pokemon Blue                              | 🔵🔵⚪️⚪️⚪️ |   Crashes when entering name screen or using an attack. |
-| Pokemon Red                               | 🔵🔵⚪️⚪️⚪️ |   Crashes when entering name screen or using an attack. |
+| Pokemon Blue                              | 🔵🔵⚪️⚪️⚪️ |   Sometimes hangs when using an attack. |
+| Pokemon Red                               | 🔵🔵⚪️⚪️⚪️ |   Sometimes hangs when using an attack. |
 | Pop Up                                    | 🔵🔵🔵⚪️⚪️ |   |
 | Q Billion                                 | ⚪️⚪️⚪️⚪️⚪️ |   |
 | Serpent                                   | 🔵🔵⚪️⚪️⚪️ |   Severe graphical errors. |

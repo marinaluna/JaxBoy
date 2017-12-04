@@ -82,7 +82,7 @@ void MBC1::Write8(u16 address, u8 data)
     if(address >= 0x2000 && address <= 0x3FFF)
     {
         // bug
-        if(data == 0x00 || data == 0x20 || data == 0x40 || data == 0x60)
+        if((data & 0x0F) == 0x00)
             data++;
         romBank = data & 0x1F;
         return;

@@ -38,6 +38,9 @@ std::unique_ptr<MemoryPage>& MBC3::GetPage(u16 address)
 void MBC3::Write8(u16 address, u8 data)
 {
     if(address >= 0x2000 && address <= 0x3FFF) {
+        // bug
+        if((data & 0x7F) == 0x00)
+            data++;
         romBank = data & 0x7F;
         return;
     }
