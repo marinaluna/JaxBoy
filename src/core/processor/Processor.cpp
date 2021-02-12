@@ -19,6 +19,8 @@
 
 #include "../../debug/Logger.h"
 
+#include <stdexcept>
+
 
 namespace Core {
 

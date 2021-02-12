@@ -17,6 +17,7 @@
 #include "../../GameBoy.h"
 
 #include <string>
+#include <stdexcept>
 
 
 namespace Memory {

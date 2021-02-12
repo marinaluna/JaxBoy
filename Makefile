@@ -2,24 +2,23 @@ BINARY := build/jaxboy
 SRCS := $(shell find . -iname "*.cpp")
 OBJS := $(addprefix build/,$(SRCS:.cpp=.o))
 
-NEEDED_LIBS := 
-NEEDED_FRAMEWORKS := SDL2
+NEEDED_LIBS := SDL2 SDLmain pthread
 
-CXX := clang++ -flto
-LD := $(CXX) $(addprefix libs/,$(NEEDED_LIBS)) $(addprefix -framework ,$(NEEDED_FRAMEWORKS))
-override CXXFLAGS += -std=c++11 -F/usr/local/Frameworks
-override LDFLAGS += $(CXXFLAGS)
+CXX := g++ -flto
+LD := $(CXX) $(addprefix -l,$(NEEDED_LIBS))
+override CXXFLAGS += -std=c++11
+override LDFLAGS += $(CXXFLAGS) -lSDL2 -lSDLmain
 
 all:$(BINARY)
 
-$(BINARY):$(OBJS) $(addprefix libs/,$(NEEDED_LIBS))
+$(BINARY):$(OBJS) $(addprefix -l,$(NEEDED_LIBS))
 	$(LD) $(LDFLAGS) -o $@ $^
 
 build/%.o:%.cpp
 	$(CXX) -O2 -c $(CXXFLAGS) $< -o $@
 
 run:$(BINARY)
-	@$(BINARY) roms/tetris.gb roms/bootrom.bin --scale=2
+	@$(BINARY) pokeblue.gb bootrom.bin --scale=2
 
 clean:
 	rm -rf build/*

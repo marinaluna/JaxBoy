@@ -17,6 +17,7 @@
 
 #include "../common/Globals.h"
 
+#include <stdexcept>
 
 
 namespace Core {

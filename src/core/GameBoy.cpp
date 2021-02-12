@@ -23,6 +23,7 @@
 #include "../debug/Logger.h"
 
 #include <string>
+#include <stdexcept>
 
 
 namespace Core {

@@ -26,6 +26,7 @@
 #include "../../common/Globals.h"
 
 #include <string>
+#include <stdexcept>
 
 
 static bool CheckBounds8(u16 address)

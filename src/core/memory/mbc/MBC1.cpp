@@ -19,6 +19,8 @@
 
 #include <cmath>
 #include <string>
+#include <cstring>
+#include <stdexcept>
 
 
 namespace Memory {

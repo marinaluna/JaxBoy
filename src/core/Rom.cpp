@@ -18,6 +18,7 @@
 
 #include <string>
 #include <algorithm>
+#include <stdexcept>
 
 
 namespace Core {

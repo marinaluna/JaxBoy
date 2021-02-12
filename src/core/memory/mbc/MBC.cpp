@@ -18,6 +18,8 @@
 #include "../../Rom.h"
 
 #include <string>
+#include <cstring>
+#include <stdexcept>
 
 
 namespace Memory {
